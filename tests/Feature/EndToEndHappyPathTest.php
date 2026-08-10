@@ -26,6 +26,7 @@ class EndToEndHappyPathTest extends TestCase
     public function test_complete_platform_happy_path_scenario(): void
     {
         Storage::fake('local');
+        $this->app->bind(\App\Interfaces\MediaStorageInterface::class, \App\Services\Media\Adapters\LocalMediaAdapter::class);
 
         // ---------------------------------------------------------
         // 1. Admin Creates & Publishes a Listing

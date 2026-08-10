@@ -11,6 +11,7 @@ use App\Enums\ListingStatus;
 use App\Exceptions\BookingConflictException;
 use App\Models\Booking;
 use App\Models\Listing;
+use App\Models\PlatformSetting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -112,6 +113,17 @@ class BookingService
     {
         if (in_array($booking->status, [BookingStatus::Completed, BookingStatus::Cancelled])) {
             throw new HttpException(422, 'Booking cannot be cancelled in its current state.');
+        }
+
+        $windowDays = (int) PlatformSetting::get('cancellation_window_days', 7);
+        $checkIn = Carbon::parse($booking->check_in_date);
+
+        if ($windowDays === 0) {
+            throw new HttpException(422, 'Cancellations are not allowed.');
+        }
+
+        if (now()->addDays($windowDays)->isAfter($checkIn)) {
+            throw new HttpException(422, "Bookings can only be cancelled at least {$windowDays} days before check-in.");
         }
 
         $booking->update([

@@ -63,5 +63,6 @@ class PlatformSetting extends Model
 
         Cache::forget("setting_{$key}");
         Cache::forget("setting_model_{$key}");
+        Cache::forget("setting_data_v2_{$key}");
     }
 }

@@ -23,6 +23,9 @@ class AvailabilityService
         $end = Carbon::parse($checkOut)->startOfDay();
 
         // 1. Check existing confirmed/active/pending bookings
+        /*
+        // TEMPORARILY DISABLED: Currently allowing all users to book at any time without conflict checking.
+        // To re-enable strict availability checking, simply uncomment this block.
         $hasBookingConflict = Booking::where('listing_id', $listing->id)
             ->whereIn('status', ['pending', 'confirmed', 'active'])
             ->where(function ($query) use ($start, $end) {
@@ -35,6 +38,7 @@ class AvailabilityService
         if ($hasBookingConflict) {
             return false;
         }
+        */
 
         // 2. Check manual availability blocks
         $hasBlockConflict = AvailabilityBlock::where('listing_id', $listing->id)

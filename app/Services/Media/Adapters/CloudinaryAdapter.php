@@ -35,13 +35,26 @@ class CloudinaryAdapter implements MediaStorageInterface
     public function upload(UploadedFile $file, string $folder): array
     {
         try {
+            // Log file details for testing
+            $imageInfo = getimagesize($file->getRealPath());
+            $width = $imageInfo ? $imageInfo[0] : 'unknown';
+            $height = $imageInfo ? $imageInfo[1] : 'unknown';
+            $sizeKb = round($file->getSize() / 1024, 2);
+            Log::info("Image Uploaded from Dashboard - Size: {$sizeKb}KB, Dimensions: {$width}x{$height}, MIME: " . $file->getMimeType());
+
             $response = $this->cloudinary->uploadApi()->upload(
                 $file->getRealPath(),
                 ['folder' => $folder]
             );
 
+            $url = $response['secure_url'];
+            // Inject f_auto,q_auto into the delivery URL
+            if (preg_match('#(/upload/)(v\d+/.+)#', $url, $matches)) {
+                $url = str_replace($matches[1] . $matches[2], $matches[1] . 'f_auto,q_auto/' . $matches[2], $url);
+            }
+
             return [
-                'url'       => $response['secure_url'],
+                'url'       => $url,
                 'public_id' => $response['public_id'],
             ];
         } catch (\Exception $e) {
