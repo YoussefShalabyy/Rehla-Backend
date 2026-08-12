@@ -20,44 +20,38 @@ class EasyKashAdapter implements PaymentGatewayInterface
         $this->apiKey = config('payment.easykash.api_key', '');
         $this->secretKey = config('payment.easykash.secret_key', '');
         $this->webhookSecret = config('payment.easykash.webhook_secret', '');
-        // Default to a sandbox/production URL based on their docs when available
-        $this->baseUrl = config('payment.easykash.base_url', 'https://api.easykash.net/v1');
+        $this->baseUrl = config('payment.easykash.base_url', 'https://back.easykash.net/api/directpayv1');
     }
 
     public function charge(array $payload): array
     {
         try {
-            // TODO: Implement EasyKash charge logic based on API documentation
-            // Typical flow:
-            // 1. Send POST request to EasyKash checkout endpoint
-            // 2. Return the checkout URL for the frontend WebView
-            
-            /*
-            $response = Http::withToken($this->secretKey)->post("{$this->baseUrl}/checkout", [
-                'amount' => $payload['amount_cents'] / 100, // typically gateways expect main currency unit or cents
+            // Uniquely identify this payment attempt
+            $customerReference = $payload['booking_reference'] . '-' . uniqid();
+
+            $response = Http::withHeaders([
+                'authorization' => $this->apiKey,
+            ])->post("{$this->baseUrl}/pay", [
+                'amount' => $payload['amount_cents'] / 100, // Amount must be in EGP
                 'currency' => $payload['currency'] ?? 'EGP',
-                'reference' => $payload['booking_reference'] . '-' . time(),
-                'customer' => [
-                    'name' => $payload['customer_name'] ?? 'Guest',
-                    'email' => $payload['customer_email'] ?? 'test@example.com',
-                    'phone' => $payload['customer_phone'] ?? '+201000000000',
-                ]
+                'name' => $payload['customer_name'] ?? 'Guest',
+                'email' => $payload['customer_email'] ?? 'guest@example.com',
+                'mobile' => $payload['customer_phone'] ?? '01000000000',
+                'redirectUrl' => config('app.url') . '/api/v1/payments/redirect',
+                'customerReference' => $customerReference,
             ]);
 
             if (! $response->successful()) {
                 throw new Exception('EasyKash charge failed: ' . $response->body());
             }
 
-            $checkoutUrl = $response->json('data.checkout_url');
-            $transactionId = (string) $response->json('data.id');
-            */
-            
-            // Placeholder return
+            $checkoutUrl = $response->json('redirectUrl');
+
             return [
                 'success' => true,
-                'transaction_id' => 'temp-txn-' . uniqid(),
-                'checkout_url' => 'https://checkout.easykash.net/temp',
-                'raw' => ['status' => 'pending_implementation'],
+                'transaction_id' => $customerReference, // Store our reference as transaction_id to match later
+                'checkout_url' => $checkoutUrl,
+                'raw' => $response->json(),
             ];
 
         } catch (Exception $e) {
@@ -100,27 +94,33 @@ class EasyKashAdapter implements PaymentGatewayInterface
 
     public function verifyWebhook(array $payload, string $signature): bool
     {
-        // TODO: Implement EasyKash webhook signature verification
-        // Usually it involves hashing the payload with a secret and comparing to the signature header.
-        /*
-        $calculatedSignature = hash_hmac('sha256', json_encode($payload), $this->webhookSecret);
-        return hash_equals($calculatedSignature, $signature);
-        */
+        // The webhook documentation specifies sorting these exactly:
+        $dataToSecure = [
+            $payload['ProductCode'] ?? '',
+            $payload['Amount'] ?? '',
+            $payload['ProductType'] ?? '',
+            $payload['PaymentMethod'] ?? '',
+            $payload['status'] ?? '',
+            $payload['easykashRef'] ?? '',
+            $payload['customerReference'] ?? '',
+        ];
 
-        return true; // Placeholder
+        $dataStr = implode('', $dataToSecure);
+        
+        // It's possible the secret key is used instead of a separate webhook secret
+        $secret = $this->webhookSecret ?: $this->secretKey;
+        
+        $calculatedSignature = hash_hmac('sha512', $dataStr, $secret);
+
+        return hash_equals($calculatedSignature, $signature);
     }
 
     public function extractWebhookData(array $payload): array
     {
-        // TODO: Extract exact transaction ID and success state from EasyKash webhook payload
-        /*
-        $transactionId = (string) ($payload['data']['id'] ?? '');
-        $status = $payload['data']['status'] ?? 'failed';
-        $success = $status === 'successful' || $status === 'paid';
-        */
-
-        $transactionId = (string) ($payload['transaction_id'] ?? '');
-        $success = ($payload['status'] ?? '') === 'success';
+        // We stored customerReference as the transaction_id when initiating
+        $transactionId = (string) ($payload['customerReference'] ?? '');
+        $status = $payload['status'] ?? '';
+        $success = $status === 'PAID';
 
         return [
             'transaction_id' => $transactionId ?: null,
