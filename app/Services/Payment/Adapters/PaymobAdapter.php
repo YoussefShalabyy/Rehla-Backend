@@ -180,4 +180,16 @@ class PaymobAdapter implements PaymentGatewayInterface
 
         return hash_equals($calculatedHmac, $signature);
     }
+
+    public function extractWebhookData(array $payload): array
+    {
+        $obj = $payload['obj'] ?? [];
+        $transactionId = (string) ($obj['order']['id'] ?? '');
+        $success = $obj['success'] ?? false;
+
+        return [
+            'transaction_id' => $transactionId ?: null,
+            'success' => $success,
+        ];
+    }
 }

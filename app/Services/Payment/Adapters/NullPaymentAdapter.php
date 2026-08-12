@@ -36,4 +36,12 @@ final class NullPaymentAdapter implements PaymentGatewayInterface
         // In tests, pass 'valid-signature' as the signature to get true
         return $signature === 'valid-signature';
     }
+
+    public function extractWebhookData(array $payload): array
+    {
+        return [
+            'transaction_id' => $payload['transaction_id'] ?? null,
+            'success' => $payload['success'] ?? false,
+        ];
+    }
 }

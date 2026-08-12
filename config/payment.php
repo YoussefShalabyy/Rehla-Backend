@@ -25,4 +25,11 @@ return [
         'webhook_secret'  => env('STRIPE_WEBHOOK_SECRET', ''),
     ],
 
+    'easykash' => [
+        'api_key'         => env('EASYKASH_API_KEY', ''),
+        'secret_key'      => env('EASYKASH_SECRET_KEY', ''),
+        'webhook_secret'  => env('EASYKASH_WEBHOOK_SECRET', ''),
+        'base_url'        => env('EASYKASH_BASE_URL', 'https://api.easykash.net/v1'),
+    ],
+
 ];

@@ -36,6 +36,7 @@ Route::middleware('throttle:auth')->prefix('auth')->group(function () {
 // ── Webhook Routes (No Auth required) ────────────────────────────────────────
 Route::middleware('throttle:webhook')->prefix('webhooks')->group(function () {
     Route::post('/paymob', [\App\Http\Controllers\Api\Webhook\PaymobWebhookController::class, 'handle']);
+    Route::post('/easykash', [\App\Http\Controllers\Api\Webhook\EasyKashWebhookController::class, 'handle']);
 });
 
 // ── Public Listing Routes ─────────────────────────────────────────────────────

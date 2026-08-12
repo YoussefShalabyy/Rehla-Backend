@@ -27,4 +27,12 @@ interface PaymentGatewayInterface
      * @param  array<string, mixed>  $payload
      */
     public function verifyWebhook(array $payload, string $signature): bool;
+
+    /**
+     * Extract standard webhook data from a gateway-specific payload.
+     *
+     * @param array<string, mixed> $payload
+     * @return array{transaction_id: string|null, success: bool}
+     */
+    public function extractWebhookData(array $payload): array;
 }

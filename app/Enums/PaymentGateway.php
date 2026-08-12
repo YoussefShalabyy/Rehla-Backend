@@ -11,5 +11,6 @@ enum PaymentGateway: string
     case Stripe      = 'stripe';
     case Fawry       = 'fawry';
     case PayPal      = 'paypal';
+    case EasyKash    = 'easykash';
     case NullAdapter = 'null_adapter';
 }

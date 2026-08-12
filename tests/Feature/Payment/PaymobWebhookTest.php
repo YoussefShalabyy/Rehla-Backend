@@ -35,6 +35,10 @@ class PaymobWebhookTest extends TestCase
         // Mock the PaymentGatewayInterface to bypass actual HMAC string matching
         $mock = \Mockery::mock(\App\Interfaces\PaymentGatewayInterface::class);
         $mock->shouldReceive('verifyWebhook')->once()->andReturn(true);
+        $mock->shouldReceive('extractWebhookData')->once()->andReturn([
+            'transaction_id' => '123456',
+            'success' => true,
+        ]);
         $this->app->instance(\App\Interfaces\PaymentGatewayInterface::class, $mock);
 
         $this->withoutExceptionHandling();

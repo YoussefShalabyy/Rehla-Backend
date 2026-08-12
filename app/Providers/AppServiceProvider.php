@@ -64,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(PaymentGatewayInterface::class, match ($gateway) {
             'paymob' => \App\Services\Payment\Adapters\PaymobAdapter::class,
+            'easykash' => \App\Services\Payment\Adapters\EasyKashAdapter::class,
             default  => NullPaymentAdapter::class,
         });
     }

@@ -96,12 +96,13 @@ class PaymentService
             throw new \Exception('Invalid Webhook Signature');
         }
 
-        $obj = $payload['obj'] ?? [];
-        $transactionId = (string) ($obj['order']['id'] ?? '');
-        $success = $obj['success'] ?? false;
+        // 2. Extract Data using Adapter
+        $webhookData = $this->gateway->extractWebhookData($payload);
+        $transactionId = $webhookData['transaction_id'];
+        $success = $webhookData['success'];
 
         if (empty($transactionId)) {
-            throw new \Exception('Invalid Webhook Payload: Missing Order ID');
+            throw new \Exception('Invalid Webhook Payload: Missing Order/Transaction ID');
         }
 
         DB::transaction(function () use ($transactionId, $success, $payload) {
