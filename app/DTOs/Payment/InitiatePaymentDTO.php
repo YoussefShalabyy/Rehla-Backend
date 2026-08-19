@@ -11,6 +11,7 @@ readonly class InitiatePaymentDTO
     public function __construct(
         public string $bookingUuid,
         public PaymentGateway $gateway,
+        public bool $useWallet = true,
     ) {
     }
 }

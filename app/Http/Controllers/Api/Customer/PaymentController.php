@@ -26,6 +26,7 @@ class PaymentController extends Controller
         $request->validate([
             'booking_uuid' => ['required', 'string', 'exists:bookings,uuid'],
             'gateway'      => ['required', Rule::enum(PaymentGateway::class)],
+            'use_wallet'   => ['nullable', 'boolean'],
         ]);
 
         $booking = Booking::where('uuid', $request->input('booking_uuid'))->firstOrFail();
@@ -36,7 +37,8 @@ class PaymentController extends Controller
 
         $dto = new InitiatePaymentDTO(
             bookingUuid: $booking->uuid,
-            gateway: PaymentGateway::from($request->input('gateway'))
+            gateway: PaymentGateway::from($request->input('gateway')),
+            useWallet: $request->boolean('use_wallet', true)
         );
 
         try {

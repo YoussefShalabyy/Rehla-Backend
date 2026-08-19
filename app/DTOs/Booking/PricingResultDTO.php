@@ -12,6 +12,7 @@ readonly class PricingResultDTO
         public int $cleaningFeeCents,
         public int $extraGuestFeeCents,
         public int $platformFeeCents,
+        public int $lengthOfStayDiscountCents,
         public int $grandTotalCents,
     ) {
     }

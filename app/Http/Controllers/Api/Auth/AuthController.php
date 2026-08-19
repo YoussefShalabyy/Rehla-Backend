@@ -126,6 +126,17 @@ class AuthController extends Controller
         ], 'Logged in with Apple successfully.');
     }
     
+    public function updatePushToken(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required|string',
+        ]);
+
+        $user = $request->user();
+        $user->update(['expo_push_token' => $request->token]);
+
+        return $this->success(null, 'Push token updated successfully.');
+    }
 
     public function deleteAccount(Request $request): JsonResponse
     {

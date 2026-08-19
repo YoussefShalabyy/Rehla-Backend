@@ -29,6 +29,7 @@ class CreateBookingRequest extends FormRequest
             'check_out_date' => ['required', 'date', 'after:check_in_date'],
             'guests_count'   => ['required', 'integer', 'min:1'],
             'notes'          => ['nullable', 'string', 'max:1000'],
+            'promo_code'     => ['nullable', 'string', 'exists:promo_codes,code'],
         ];
     }
 }

@@ -80,7 +80,7 @@ class EndToEndHappyPathTest extends TestCase
 
         // Search for listing
         $searchResponse = $this->getJson('/api/v1/listings?city=Cairo&type=property');
-        $searchResponse->assertStatus(200);
+        $searchResponse->assertOk();
         $this->assertCount(1, $searchResponse->json('data'));
         $this->assertEquals($listingUuid, $searchResponse->json('data.0.uuid'));
 
@@ -127,7 +127,8 @@ class EndToEndHappyPathTest extends TestCase
                 'error_occured'  => false,
             ],
         ]);
-        $webhookResponse->assertStatus(200);
+        $webhookResponse->dump();
+        $webhookResponse->assertOk();
 
         $this->assertDatabaseHas('payments', [
             'id'     => $payment->id,
@@ -160,16 +161,16 @@ class EndToEndHappyPathTest extends TestCase
         \Laravel\Sanctum\Sanctum::actingAs($admin);
         $this->putJson("/api/v1/admin/reviews/{$reviewUuid}/moderate", [
             'status' => ReviewStatus::Approved->value,
-        ])->assertStatus(200);
+        ])->assertOk();
 
         // Admin replies to the review
         $this->postJson("/api/v1/admin/reviews/{$reviewUuid}/reply", [
             'reply' => 'Thank you for your kind words!',
-        ])->assertStatus(200);
+        ])->assertOk();
 
         // Review appears publicly on listing
         $listingReviewsResponse = $this->getJson("/api/v1/listings/{$listingUuid}/reviews");
-        $listingReviewsResponse->assertStatus(200);
+        $listingReviewsResponse->assertOk();
         $this->assertCount(1, $listingReviewsResponse->json('data'));
         $this->assertEquals(5, $listingReviewsResponse->json('data.0.rating'));
 

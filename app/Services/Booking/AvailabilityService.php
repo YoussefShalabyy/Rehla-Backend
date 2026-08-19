@@ -22,33 +22,44 @@ class AvailabilityService
         $start = Carbon::parse($checkIn)->startOfDay();
         $end = Carbon::parse($checkOut)->startOfDay();
 
+        \Illuminate\Support\Facades\Log::info('Availability Check Started', [
+            'listing_id' => $listing->id,
+            'check_in' => $start->format('Y-m-d'),
+            'check_out' => $end->format('Y-m-d'),
+        ]);
+
         // 1. Check existing confirmed/active/pending bookings
         /*
-        // TEMPORARILY DISABLED: Currently allowing all users to book at any time without conflict checking.
-        // To re-enable strict availability checking, simply uncomment this block.
-        $hasBookingConflict = Booking::where('listing_id', $listing->id)
+        // TEMPORARILY DISABLED: User explicitly requested to allow double bookings for testing/MVP.
+        $overlappingBookings = Booking::where('listing_id', $listing->id)
             ->whereIn('status', ['pending', 'confirmed', 'active'])
             ->where(function ($query) use ($start, $end) {
                 // Booking overlaps if (Booking.checkIn < Requested.checkOut) AND (Booking.checkOut > Requested.checkIn)
                 $query->where('check_in_date', '<', $end->format('Y-m-d'))
                       ->where('check_out_date', '>', $start->format('Y-m-d'));
             })
-            ->exists();
+            ->get();
 
-        if ($hasBookingConflict) {
+        if ($overlappingBookings->isNotEmpty()) {
+            \Illuminate\Support\Facades\Log::warning('Availability Failed: Overlapping Bookings found', [
+                'bookings' => $overlappingBookings->map(fn($b) => ['id' => $b->id, 'status' => $b->status->value])->toArray()
+            ]);
             return false;
         }
         */
 
         // 2. Check manual availability blocks
-        $hasBlockConflict = AvailabilityBlock::where('listing_id', $listing->id)
+        $overlappingBlocks = AvailabilityBlock::where('listing_id', $listing->id)
             ->where(function ($query) use ($start, $end) {
                 $query->where('start_date', '<', $end->format('Y-m-d'))
                       ->where('end_date', '>', $start->format('Y-m-d'));
             })
-            ->exists();
+            ->get();
 
-        if ($hasBlockConflict) {
+        if ($overlappingBlocks->isNotEmpty()) {
+            \Illuminate\Support\Facades\Log::warning('Availability Failed: Overlapping Blocks found', [
+                'blocks' => $overlappingBlocks->pluck('id', 'reason')->toArray()
+            ]);
             return false;
         }
 

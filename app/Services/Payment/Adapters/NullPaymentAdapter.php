@@ -39,9 +39,12 @@ final class NullPaymentAdapter implements PaymentGatewayInterface
 
     public function extractWebhookData(array $payload): array
     {
+        $transactionId = $payload['transaction_id'] ?? ($payload['obj']['order']['id'] ?? null);
+        $success = $payload['success'] ?? ($payload['obj']['success'] ?? false);
+
         return [
-            'transaction_id' => $payload['transaction_id'] ?? null,
-            'success' => $payload['success'] ?? false,
+            'transaction_id' => $transactionId ? (string) $transactionId : null,
+            'success' => $success,
         ];
     }
 }

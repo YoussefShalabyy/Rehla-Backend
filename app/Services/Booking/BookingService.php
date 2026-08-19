@@ -18,13 +18,16 @@ use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Services\Notification\NotificationService;
+use App\Services\PromoCode\PromoCodeService;
+use App\Models\PromoCode;
 
 class BookingService
 {
     public function __construct(
         private readonly AvailabilityService $availabilityService,
         private readonly PricingService $pricingService,
-        private readonly NotificationService $notificationService
+        private readonly NotificationService $notificationService,
+        private readonly PromoCodeService $promoCodeService,
     ) {
     }
 
@@ -35,6 +38,10 @@ class BookingService
     public function createBooking(CreateBookingDTO $dto, User $customer): Booking
     {
         return DB::transaction(function () use ($dto, $customer) {
+            if ($customer->status === \App\Enums\UserStatus::Suspended) {
+                throw new HttpException(403, 'Your account is suspended. You cannot make a booking.');
+            }
+
             // 1. Find Listing and lock it for update
             $listing = Listing::where('uuid', $dto->listingUuid)->lockForUpdate()->first();
 
@@ -69,25 +76,52 @@ class BookingService
                 $dto->guestsCount
             );
 
-            // 4. Create Booking with persisted pricing snapshot
+            // 4. Promo Code Logic
+            $promoCode = null;
+            $discountAmountCents = 0;
+            
+            if ($dto->promoCode) {
+                $promoCode = PromoCode::where('code', $dto->promoCode)->lockForUpdate()->first();
+                if (! $promoCode) {
+                    throw new HttpException(422, 'Invalid promo code.');
+                }
+                
+                // This validates everything including scope and min checkout amount
+                $this->promoCodeService->validate($promoCode, $listing, $customer, $pricing->grandTotalCents, $dto->checkInDate, $dto->checkOutDate);
+                
+                $discountAmountCents = $this->promoCodeService->calculateDiscount($promoCode, $pricing->grandTotalCents);
+                
+                // Increment used count
+                $promoCode->increment('used_count');
+            }
+            
+            $finalTotalCents = max(0, $pricing->grandTotalCents - $discountAmountCents);
+
+            // 5. Create Booking with persisted pricing snapshot
             $booking = Booking::create([
-                'listing_id'         => $listing->id,
-                'customer_id'        => $customer->id,
-                'check_in_date'      => $dto->checkInDate,
-                'check_out_date'     => $dto->checkOutDate,
-                'guests_count'       => $dto->guestsCount,
-                'total_amount_cents' => $pricing->grandTotalCents,
-                'platform_fee_cents' => $pricing->platformFeeCents,
-                'notes'              => $dto->notes,
-                'status'             => BookingStatus::Pending,
-                'payment_status'     => \App\Enums\PaymentStatus::Pending,
-                'pricing_snapshot'   => [
+                'listing_id'            => $listing->id,
+                'customer_id'           => $customer->id,
+                'check_in_date'         => $dto->checkInDate,
+                'check_out_date'        => $dto->checkOutDate,
+                'guests_count'          => $dto->guestsCount,
+                'total_amount_cents'    => $finalTotalCents,
+                'platform_fee_cents'    => $pricing->platformFeeCents,
+                'promo_code_id'         => $promoCode?->id,
+                'length_of_stay_discount_cents' => $pricing->lengthOfStayDiscountCents,
+                'discount_amount_cents' => $discountAmountCents,
+                'notes'                 => $dto->notes,
+                'status'                => BookingStatus::Pending,
+                'payment_status'        => \App\Enums\PaymentStatus::Pending,
+                'pricing_snapshot'      => [
                     'nights'                => $pricing->nights,
                     'base_total_cents'      => $pricing->baseTotalCents,
                     'cleaning_fee_cents'    => $pricing->cleaningFeeCents,
                     'extra_guest_fee_cents' => $pricing->extraGuestFeeCents,
                     'platform_fee_cents'    => $pricing->platformFeeCents,
-                    'grand_total_cents'     => $pricing->grandTotalCents,
+                    'length_of_stay_discount_cents' => $pricing->lengthOfStayDiscountCents,
+                    'discount_amount_cents' => $discountAmountCents,
+                    'promo_code'            => $promoCode?->code,
+                    'grand_total_cents'     => $finalTotalCents,
                 ],
             ]);
 

@@ -14,6 +14,7 @@ readonly class CreateBookingDTO
         public string $checkOutDate,
         public int $guestsCount,
         public ?string $notes,
+        public ?string $promoCode = null,
     ) {
     }
 
@@ -25,6 +26,7 @@ readonly class CreateBookingDTO
             checkOutDate: $request->validated('check_out_date'),
             guestsCount: (int) $request->validated('guests_count'),
             notes: $request->validated('notes'),
+            promoCode: $request->validated('promo_code'),
         );
     }
 }

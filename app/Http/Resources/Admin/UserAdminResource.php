@@ -19,6 +19,7 @@ class UserAdminResource extends JsonResource
             'role'           => $this->role,
             'status'         => $this->status,
             'created_at'     => $this->created_at,
+            'wallet_balance_cents' => $this->wallet ? $this->wallet->balance_cents : 0,
             'booking_count'  => $this->whenCounted('bookings'),
             'bookings'       => \App\Http\Resources\Booking\BookingResource::collection($this->whenLoaded('bookings')),
         ];

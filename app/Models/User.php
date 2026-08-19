@@ -36,6 +36,7 @@ class User extends Authenticatable
         'last_login_at',
         'provider',
         'provider_id',
+        'expo_push_token',
     ];
 
     /**

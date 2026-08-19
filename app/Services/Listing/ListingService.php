@@ -160,6 +160,7 @@ class ListingService
                 'created_by'             => $admin->id,
                 'type'                   => $dto->type,
                 'property_type'          => $dto->propertyType,
+                'category'               => $dto->category,
                 'title'                  => $dto->title,
                 'description'            => $dto->description,
                 'address'                => $dto->address,
@@ -168,6 +169,9 @@ class ListingService
                 'latitude'               => $dto->latitude,
                 'longitude'              => $dto->longitude,
                 'base_price_cents'       => $dto->basePriceCents,
+                'original_base_price_cents' => $dto->originalBasePriceCents,
+                'weekly_price_cents'     => $dto->weeklyPriceCents,
+                'monthly_price_cents'    => $dto->monthlyPriceCents,
                 'cleaning_fee_cents'     => $dto->cleaningFeeCents,
                 'extra_guest_fee_cents'  => $dto->extraGuestFeeCents,
                 'max_guests'             => $dto->maxGuests,
@@ -197,8 +201,20 @@ class ListingService
         if ($dto->description !== null) {
             $updateData['description'] = $dto->description;
         }
+        if ($dto->category !== null) {
+            $updateData['category'] = $dto->category;
+        }
         if ($dto->basePriceCents !== null) {
             $updateData['base_price_cents'] = $dto->basePriceCents;
+        }
+        if ($dto->originalBasePriceCents !== null) {
+            $updateData['original_base_price_cents'] = $dto->originalBasePriceCents;
+        }
+        if ($dto->weeklyPriceCents !== null) {
+            $updateData['weekly_price_cents'] = $dto->weeklyPriceCents;
+        }
+        if ($dto->monthlyPriceCents !== null) {
+            $updateData['monthly_price_cents'] = $dto->monthlyPriceCents;
         }
         if ($dto->cleaningFeeCents !== null) {
             $updateData['cleaning_fee_cents'] = $dto->cleaningFeeCents;

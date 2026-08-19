@@ -115,4 +115,36 @@ class UserController extends Controller
 
         return $this->success(null, 'User permanently deleted.');
     }
+
+    /**
+     * Add balance to a user's wallet.
+     */
+    public function addBalance(Request $request, string $uuid): JsonResponse
+    {
+        $validated = $request->validate([
+            'amount_cents' => ['required', 'integer', 'min:1'],
+            'reason'       => ['required', 'string', 'max:255'],
+        ]);
+
+        $user = User::where('uuid', $uuid)->firstOrFail();
+
+        // Ensure user has a wallet
+        $wallet = $user->wallet()->firstOrCreate(
+            ['user_id' => $user->id],
+            ['uuid' => (string) Str::uuid(), 'balance_cents' => 0]
+        );
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($wallet, $validated) {
+            $wallet->increment('balance_cents', $validated['amount_cents']);
+            
+            $wallet->transactions()->create([
+                'uuid' => (string) Str::uuid(),
+                'type' => 'credit',
+                'amount_cents' => $validated['amount_cents'],
+                'description' => 'Admin adjustment: ' . $validated['reason'],
+            ]);
+        });
+
+        return $this->success(['balance_cents' => $wallet->fresh()->balance_cents], 'Balance added successfully.');
+    }
 }

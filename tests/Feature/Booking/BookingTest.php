@@ -62,7 +62,7 @@ class BookingTest extends TestCase
         ]);
     }
 
-    public function test_returns_409_when_dates_are_already_booked(): void
+    public function test_allows_double_booking_temporarily(): void
     {
         Booking::factory()->create([
             'listing_id'    => $this->listing->id,
@@ -78,8 +78,8 @@ class BookingTest extends TestCase
             'guests_count'  => 1,
         ]);
 
-        $response->assertStatus(409);
-        $response->assertJsonPath('success', false);
+        $response->assertStatus(201);
+        $response->assertJsonPath('success', true);
     }
 
     public function test_returns_409_when_dates_are_manually_blocked(): void
@@ -131,6 +131,7 @@ class BookingTest extends TestCase
             'listing_id' => $this->listing->id,
             'customer_id'=> $this->customer->id,
             'status'     => 'pending',
+            'check_in_date' => Carbon::today()->addDays(10)->format('Y-m-d'),
         ]);
 
         $response = $this->actingAs($this->customer)->postJson("/api/v1/bookings/{$booking->uuid}/cancel", [

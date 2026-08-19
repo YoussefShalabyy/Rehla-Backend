@@ -28,6 +28,7 @@ class ListingListResource extends JsonResource
             'title' => $this->title,
             'city' => $this->city,
             'base_price_cents' => $this->base_price_cents,
+            'original_base_price_cents' => $this->original_base_price_cents,
             'is_instant_bookable' => $this->is_instant_bookable,
             'primary_image_url' => $primaryImage,
             'average_rating' => $this->average_rating,

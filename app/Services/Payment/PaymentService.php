@@ -48,42 +48,84 @@ class PaymentService
             throw new HttpException(422, 'Booking is already paid.');
         }
 
-        $payment = Payment::create([
-            'uuid' => Str::uuid()->toString(),
-            'booking_id' => $booking->id,
-            'gateway' => $dto->gateway,
-            'amount_cents' => $booking->total_amount_cents,
-            'status' => PaymentStatus::Pending,
-        ]);
+        return DB::transaction(function () use ($dto, $customer, $booking) {
+            $walletAmountApplied = 0;
+            $gatewayAmountApplied = $booking->total_amount_cents;
+            $wallet = $customer->wallet;
+            $walletBalance = $wallet ? $wallet->balance_cents : 0;
 
-        $payload = [
-            'amount_cents' => $booking->total_amount_cents,
-            'currency' => $booking->currency,
-            'booking_reference' => $booking->booking_reference,
-            'customer_name' => $customer->name,
-            'customer_email' => $customer->email,
-            'customer_phone' => '+201000000000', // In a real app, read from User profile
-        ];
+            if ($dto->useWallet && $walletBalance > 0) {
+                if ($walletBalance >= $booking->total_amount_cents) {
+                    $walletAmountApplied = $booking->total_amount_cents;
+                    $gatewayAmountApplied = 0;
+                } else {
+                    $walletAmountApplied = $walletBalance;
+                    $gatewayAmountApplied = $booking->total_amount_cents - $walletAmountApplied;
+                }
 
-        $gatewayResult = $this->gateway->charge($payload);
+                // Deduct from wallet immediately to prevent double spending
+                $wallet->decrement('balance_cents', $walletAmountApplied);
+                $wallet->transactions()->create([
+                    'uuid' => Str::uuid()->toString(),
+                    'type' => 'debit',
+                    'amount_cents' => $walletAmountApplied,
+                    'description' => "Payment for booking {$booking->booking_reference}",
+                ]);
+            }
 
-        if (! $gatewayResult['success']) {
+            $payment = Payment::create([
+                'uuid' => Str::uuid()->toString(),
+                'booking_id' => $booking->id,
+                'gateway' => $dto->gateway,
+                'amount_cents' => $booking->total_amount_cents,
+                'wallet_amount_cents' => $walletAmountApplied,
+                'gateway_amount_cents' => $gatewayAmountApplied,
+                'status' => $gatewayAmountApplied == 0 ? PaymentStatus::Paid : PaymentStatus::Pending,
+            ]);
+
+            // If fully paid by wallet, bypass gateway
+            if ($gatewayAmountApplied == 0) {
+                $payment->booking->update([
+                    'status' => BookingStatus::Confirmed,
+                    'payment_status' => \App\Enums\PaymentStatus::Paid,
+                ]);
+                $this->notificationService->notifyBookingConfirmed($payment->booking);
+
+                return [
+                    'payment' => $payment,
+                    'checkout_url' => null,
+                ];
+            }
+
+            $payload = [
+                'amount_cents' => $gatewayAmountApplied,
+                'currency' => $booking->currency,
+                'booking_reference' => $booking->booking_reference,
+                'customer_name' => $customer->name,
+                'customer_email' => $customer->email,
+                'customer_phone' => '+201000000000', // In a real app, read from User profile
+            ];
+
+            $gatewayResult = $this->gateway->charge($payload);
+
+            if (! $gatewayResult['success']) {
+                $payment->update([
+                    'status' => PaymentStatus::Failed,
+                    'provider_response' => $gatewayResult['raw'] ?? [],
+                ]);
+                throw new \Exception('Payment initiation failed with gateway.');
+            }
+
             $payment->update([
-                'status' => PaymentStatus::Failed,
+                'gateway_transaction_id' => $gatewayResult['transaction_id'],
                 'provider_response' => $gatewayResult['raw'],
             ]);
-            throw new \Exception('Payment initiation failed with gateway.');
-        }
 
-        $payment->update([
-            'gateway_transaction_id' => $gatewayResult['transaction_id'],
-            'provider_response' => $gatewayResult['raw'],
-        ]);
-
-        return [
-            'payment' => $payment,
-            'checkout_url' => $gatewayResult['checkout_url'],
-        ];
+            return [
+                'payment' => $payment,
+                'checkout_url' => $gatewayResult['checkout_url'],
+            ];
+        });
     }
 
     /**
@@ -151,20 +193,31 @@ class PaymentService
             throw new HttpException(422, 'Only succeeded payments can be refunded.');
         }
 
-        $gatewayResult = $this->gateway->refund($payment->gateway_transaction_id, $payment->amount_cents);
+        $customer = $payment->booking->customer;
+        $wallet = $customer->wallet()->firstOrCreate(
+            ['user_id' => $customer->id],
+            ['uuid' => Str::uuid()->toString(), 'balance_cents' => 0]
+        );
 
-        if (! $gatewayResult['success']) {
-            throw new \Exception('Refund failed with gateway.');
-        }
+        DB::transaction(function () use ($wallet, $payment) {
+            $wallet->increment('balance_cents', $payment->amount_cents);
+            
+            $wallet->transactions()->create([
+                'uuid' => Str::uuid()->toString(),
+                'type' => 'credit',
+                'amount_cents' => $payment->amount_cents,
+                'description' => "Refund for booking {$payment->booking->booking_reference}",
+            ]);
 
-        $payment->update([
-            'status' => PaymentStatus::Refunded,
-        ]);
+            $payment->update([
+                'status' => PaymentStatus::Refunded,
+            ]);
 
-        $payment->booking->update([
-            'status' => BookingStatus::Cancelled,
-            'payment_status' => \App\Enums\PaymentStatus::Refunded,
-        ]);
+            $payment->booking->update([
+                'status' => BookingStatus::Cancelled,
+                'payment_status' => \App\Enums\PaymentStatus::Refunded,
+            ]);
+        });
 
         return $payment;
     }

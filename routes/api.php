@@ -52,6 +52,11 @@ Route::prefix('destinations')->group(function () {
     Route::get('/suggested', [\App\Http\Controllers\Api\Customer\DestinationController::class, 'suggested']);
 });
 
+// ── Public Leads Routes ───────────────────────────────────────────────────────
+Route::prefix('leads')->group(function () {
+    Route::post('/', [\App\Http\Controllers\Api\Customer\LeadController::class, 'store']);
+});
+
 // ── Protected Routes (auth:sanctum) ──────────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -59,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::get('/me',        [\App\Http\Controllers\Api\Auth\AuthController::class, 'me']);
         Route::put('/profile',   [\App\Http\Controllers\Api\Auth\AuthController::class, 'updateProfile']);
+        Route::post('/push-token', [\App\Http\Controllers\Api\Auth\AuthController::class, 'updatePushToken']);
         Route::delete('/delete', [\App\Http\Controllers\Api\Auth\AuthController::class, 'deleteAccount']);
         Route::post('/logout',   [\App\Http\Controllers\Api\Auth\AuthController::class, 'logout']);
     });
@@ -69,6 +75,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Admin Dashboard
         Route::prefix('admin/dashboard')->group(function () {
             Route::get('/stats', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'stats']);
+        });
+
+        // Admin Notifications
+        Route::prefix('admin/notifications')->group(function () {
+            Route::post('/broadcast', [\App\Http\Controllers\Api\Admin\AdminNotificationController::class, 'broadcast']);
         });
 
         // Admin Listings — full CRUD + approve/reject + media + availability
@@ -100,6 +111,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/',             [\App\Http\Controllers\Api\Admin\UserController::class, 'store']);
             Route::put('/{uuid}/status', [\App\Http\Controllers\Api\Admin\UserController::class, 'updateStatus']);
             Route::delete('/{uuid}',     [\App\Http\Controllers\Api\Admin\UserController::class, 'destroy']);
+            Route::post('/{uuid}/wallet/add-balance', [\App\Http\Controllers\Api\Admin\UserController::class, 'addBalance']);
         });
 
         // Admin Bookings
@@ -134,6 +146,23 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/{uuid}',        [\App\Http\Controllers\Api\Admin\DestinationController::class, 'update']);
             Route::delete('/{uuid}',     [\App\Http\Controllers\Api\Admin\DestinationController::class, 'destroy']);
         });
+
+        // Admin Leads
+        Route::prefix('admin/leads')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\Admin\LeadController::class, 'index']);
+            Route::post('/mark-read', [\App\Http\Controllers\Api\Admin\LeadController::class, 'markRead']);
+            Route::put('/{uuid}/status', [\App\Http\Controllers\Api\Admin\LeadController::class, 'updateStatus']);
+        });
+
+        // Admin Amenities (newly added)
+        Route::apiResource('amenities', \App\Http\Controllers\Api\Admin\AmenityController::class);
+        
+        // Settings
+        Route::get('/settings', [\App\Http\Controllers\Api\Admin\PlatformSettingsController::class, 'index']);
+        Route::put('/settings', [\App\Http\Controllers\Api\Admin\PlatformSettingsController::class, 'update']);
+        
+        // Promo Codes
+        Route::apiResource('promo-codes', \App\Http\Controllers\Api\Admin\PromoCodeController::class);
     });
 
     // ── Customer Notifications ────────────────────────────────────────────────
@@ -158,6 +187,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/',          [\App\Http\Controllers\Api\Customer\PaymentController::class, 'initiate']);
         Route::get('/history',    [\App\Http\Controllers\Api\Customer\PaymentController::class, 'history']);
         Route::get('/{uuid}',     [\App\Http\Controllers\Api\Customer\PaymentController::class, 'show']);
+    });
+
+    // ── Customer Promo Codes ──────────────────────────────────────────────────
+    Route::prefix('promo-codes')->group(function () {
+        Route::post('/validate', \App\Http\Controllers\Api\Customer\PromoCodeValidationController::class);
     });
 
     // ── Customer Reviews ──────────────────────────────────────────────────────
