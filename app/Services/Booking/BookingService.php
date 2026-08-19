@@ -39,7 +39,7 @@ class BookingService
     {
         return DB::transaction(function () use ($dto, $customer) {
             if ($customer->status === \App\Enums\UserStatus::Suspended) {
-                throw new HttpException(403, 'Your account is suspended. You cannot make a booking.');
+                throw new HttpException(403, 'An error occurred while processing your booking. Please try again later.');
             }
 
             // 1. Find Listing and lock it for update

@@ -50,10 +50,10 @@ class NewBookingNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title'        => 'New Booking Request',
-            'message'      => "You have received a new booking request for {$this->booking->listing->title}.",
+            'title'        => 'Booking Requested',
+            'message'      => "Your booking request for {$this->booking->listing->title} has been submitted successfully.",
             'booking_uuid' => $this->booking->uuid,
-            'type'         => 'new_booking',
+            'type'         => 'booking_submitted',
         ];
     }
 }

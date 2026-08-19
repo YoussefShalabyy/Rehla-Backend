@@ -16,6 +16,7 @@ class ListingResource extends JsonResource
             'uuid' => $this->uuid,
             'type' => $this->type,
             'property_type' => $this->property_type,
+            'category' => $this->category,
             'title' => $this->title,
             'description' => $this->description,
             'address' => $this->address,

@@ -21,7 +21,7 @@ class BookingController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Booking::with(['listing', 'customer'])->orderBy('created_at', 'desc');
+        $query = Booking::with(['listing.media', 'customer'])->orderBy('created_at', 'desc');
 
         if ($request->has('status')) {
             $query->where('status', $request->query('status'));
@@ -39,11 +39,22 @@ class BookingController extends Controller
         ]);
 
         $booking = $this->bookingService->findByUuid($uuid);
+        $oldStatus = $booking->status;
+        $newStatus = BookingStatus::from($request->input('status'));
         
         // Direct override by admin
         $booking->update([
-            'status' => BookingStatus::from($request->input('status')),
+            'status' => $newStatus,
         ]);
+
+        if ($oldStatus !== $newStatus) {
+            $notificationService = app(\App\Services\Notification\NotificationService::class);
+            if ($newStatus === BookingStatus::Confirmed) {
+                $notificationService->notifyBookingConfirmed($booking);
+            } elseif ($newStatus === BookingStatus::Cancelled) {
+                $notificationService->notifyBookingCancelled($booking);
+            }
+        }
 
         return $this->success(new BookingResource($booking), 'Booking status updated by Admin.');
     }
