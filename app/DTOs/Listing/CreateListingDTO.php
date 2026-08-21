@@ -15,7 +15,9 @@ readonly class CreateListingDTO
         public ?PropertyType $propertyType,
         public ?string $category,
         public string $title,
+        public ?string $titleAr = null,
         public string $description,
+        public ?string $descriptionAr = null,
         public string $address,
         public string $country,
         public string $city,
@@ -32,6 +34,7 @@ readonly class CreateListingDTO
         public ?float $bathrooms,
         public ?string $transmission,
         public ?string $fuelType,
+        public ?int $year,
         public array $amenityIds,
     ) {}
 
@@ -42,7 +45,9 @@ readonly class CreateListingDTO
             propertyType: $request->validated('property_type') ? PropertyType::from($request->validated('property_type')) : null,
             category: $request->validated('category'),
             title: $request->validated('title'),
+            titleAr: $request->validated('title_ar'),
             description: $request->validated('description'),
+            descriptionAr: $request->validated('description_ar'),
             address: $request->validated('address'),
             country: $request->validated('country'),
             city: $request->validated('city'),
@@ -59,6 +64,7 @@ readonly class CreateListingDTO
             bathrooms: $request->validated('bathrooms') ? (float) $request->validated('bathrooms') : null,
             transmission: $request->validated('transmission'),
             fuelType: $request->validated('fuel_type'),
+            year: $request->validated('year') ? (int) $request->validated('year') : null,
             amenityIds: $request->validated('amenity_ids', []),
         );
     }

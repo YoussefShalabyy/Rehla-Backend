@@ -77,6 +77,33 @@ class ReviewController extends Controller
     }
 
     /**
+     * Admin updates an existing review.
+     */
+    public function update(Request $request, string $uuid): JsonResponse
+    {
+        $validated = $request->validate([
+            'rating'        => ['required', 'integer', 'min:1', 'max:5'],
+            'comment'       => ['nullable', 'string', 'max:1000'],
+            'reviewer_name' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $review = Review::where('uuid', $uuid)->firstOrFail();
+
+        $review = $this->reviewService->updateAdminReview(
+            $review,
+            (int) $validated['rating'],
+            $validated['comment'] ?? null,
+            $validated['reviewer_name'] ?? null
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Review updated successfully.',
+            'data'    => new ReviewResource($review->load('reviewer', 'listing')),
+        ]);
+    }
+
+    /**
      * Moderate a review
      */
     public function moderate(Request $request, string $uuid): JsonResponse

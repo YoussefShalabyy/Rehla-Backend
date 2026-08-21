@@ -48,7 +48,10 @@ For every new feature or change, **always** follow this order:
 
 Never skip documentation review before implementation.
 
-## Architecture Principles
+## Architecture Philosophy
+
+> **IMPORTANT NEW GUIDELINE:** If you are working on scraping, translations, or data extraction, you MUST strictly adhere to the rules defined in `docs/SCRAPING_AND_TRANSLATION_WORKFLOW.md`.
+
 - High Cohesion  
 - Low Coupling  
 - SOLID  

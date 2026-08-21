@@ -12,13 +12,19 @@ class ListingResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $lang = $request->header('Accept-Language', 'en');
+        $resolvedTitle = ($lang === 'ar' && !empty($this->title_ar)) ? $this->title_ar : $this->title;
+        $resolvedDescription = ($lang === 'ar' && !empty($this->description_ar)) ? $this->description_ar : $this->description;
+
         return [
             'uuid' => $this->uuid,
             'type' => $this->type,
             'property_type' => $this->property_type,
             'category' => $this->category,
-            'title' => $this->title,
-            'description' => $this->description,
+            'title' => $resolvedTitle,
+            'title_ar' => $this->title_ar,
+            'description' => $resolvedDescription,
+            'description_ar' => $this->description_ar,
             'address' => $this->address,
             'city' => $this->city,
             'country' => $this->country,
@@ -35,16 +41,19 @@ class ListingResource extends JsonResource
             'bathrooms' => $this->bathrooms,
             'transmission' => $this->transmission,
             'fuel_type' => $this->fuel_type,
+            'year' => $this->year,
             'status' => $this->status,
             'is_instant_bookable' => $this->is_instant_bookable,
             
             // Relationships
             'owner' => new AuthUserResource($this->whenLoaded('owner')),
-            'amenities' => $this->whenLoaded('amenities', function () {
-                return $this->amenities->map(function ($amenity) {
+            'amenities' => $this->whenLoaded('amenities', function () use ($request) {
+                return $this->amenities->map(function ($amenity) use ($request) {
+                    $lang = $request->header('Accept-Language', 'en');
+                    $name = ($lang === 'ar' && !empty($amenity->name_ar)) ? $amenity->name_ar : $amenity->name;
                     return [
                         'id' => $amenity->id,
-                        'name' => $amenity->name,
+                        'name' => $name,
                         'icon' => $amenity->icon,
                     ];
                 });

@@ -20,6 +20,7 @@ Before writing **any** code:
 5. Read `docs/DATABASE_SCHEMA.md`
 6. Read `docs/CODING_STANDARDS.md`
 7. Read `docs/IMPLEMENTATION_ROADMAP.md` — know what your phase requires
+8. **If working with scraping/translations:** Read `docs/SCRAPING_AND_TRANSLATION_WORKFLOW.md`
 
 **No exceptions. No shortcuts. Docs first, code second.**
 

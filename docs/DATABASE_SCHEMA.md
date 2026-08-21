@@ -47,7 +47,9 @@
 - `type` (enum: accommodation, car)
 - `property_type` (enum: hotel, apartment, villa, room, nullable for cars)
 - `title`
+- `title_ar` (string, nullable)
 - `description`
+- `description_ar` (text, nullable)
 - `address`
 - `country`
 - `city`
@@ -84,6 +86,7 @@
 ### amenities
 - `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
 - `name`
+- `name_ar` (string, nullable)
 - `icon` (nullable)
 - `type` (enum: property, car)
 - `timestamps`
@@ -138,8 +141,10 @@
 
 ### reviews
 - `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
-- `booking_id` (foreign → bookings)
-- `reviewer_id` (foreign → users)
+- `uuid` CHAR(36) UNIQUE NOT NULL
+- `booking_id` (foreign → bookings, nullable)
+- `reviewer_id` (foreign → users, nullable)
+- `reviewer_name` (string, nullable)
 - `listing_id` (foreign → listings)
 - `rating` (tinyint 1-5)
 - `comment` (text, nullable)

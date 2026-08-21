@@ -27,6 +27,10 @@ class ListingService
     {
         $query = Listing::query()->with(['media' => fn($q) => $q->where('is_primary', true)]);
 
+        if (auth('sanctum')->check()) {
+            $query->with(['wishlists' => fn($q) => $q->where('user_id', auth('sanctum')->id())]);
+        }
+
         $query->where('status', ListingStatus::Active);
 
         // Location Logic: Proximity, IP Geolocation, or explicit City
@@ -45,8 +49,12 @@ class ListingService
         } else {
             $ipLocationApplied = false;
             if ($dto->ipAddress && !$dto->city) {
-                // IP Geolocation
-                if ($position = \Stevebauman\Location\Facades\Location::get($dto->ipAddress)) {
+                // IP Geolocation (Cached to prevent blocking external HTTP requests on every load)
+                $position = \Illuminate\Support\Facades\Cache::remember("ip_location:{$dto->ipAddress}", now()->addHours(24), function () use ($dto) {
+                    return \Stevebauman\Location\Facades\Location::get($dto->ipAddress);
+                });
+
+                if ($position) {
                     if ($position->cityName) {
                         $query->where('city', $position->cityName);
                         $ipLocationApplied = true;
@@ -162,7 +170,9 @@ class ListingService
                 'property_type'          => $dto->propertyType,
                 'category'               => $dto->category,
                 'title'                  => $dto->title,
+                'title_ar'               => $dto->titleAr,
                 'description'            => $dto->description,
+                'description_ar'         => $dto->descriptionAr,
                 'address'                => $dto->address,
                 'country'                => $dto->country,
                 'city'                   => $dto->city,
@@ -179,6 +189,7 @@ class ListingService
                 'bathrooms'              => $dto->bathrooms,
                 'transmission'           => $dto->transmission,
                 'fuel_type'              => $dto->fuelType,
+                'year'                   => $dto->year,
                 'status'                 => ListingStatus::Active, // Admin-created listings are immediately active
                 'is_instant_bookable'    => true,
             ]);
@@ -198,8 +209,14 @@ class ListingService
         if ($dto->title !== null) {
             $updateData['title'] = $dto->title;
         }
+        if ($dto->titleAr !== null) {
+            $updateData['title_ar'] = $dto->titleAr;
+        }
         if ($dto->description !== null) {
             $updateData['description'] = $dto->description;
+        }
+        if ($dto->descriptionAr !== null) {
+            $updateData['description_ar'] = $dto->descriptionAr;
         }
         if ($dto->category !== null) {
             $updateData['category'] = $dto->category;
@@ -224,6 +241,9 @@ class ListingService
         }
         if ($dto->maxGuests !== null) {
             $updateData['max_guests'] = $dto->maxGuests;
+        }
+        if ($dto->year !== null) {
+            $updateData['year'] = $dto->year;
         }
 
         return DB::transaction(function () use ($listing, $updateData, $dto) {

@@ -22,14 +22,21 @@ class ListingListResource extends JsonResource
             }
         }
 
+        $lang = $request->header('Accept-Language', 'en');
+        $resolvedTitle = ($lang === 'ar' && !empty($this->title_ar)) ? $this->title_ar : $this->title;
+
         return [
             'uuid' => $this->uuid,
             'type' => $this->type,
-            'title' => $this->title,
+            'title' => $resolvedTitle,
+            'title_ar' => $this->title_ar,
             'city' => $this->city,
             'base_price_cents' => $this->base_price_cents,
             'original_base_price_cents' => $this->original_base_price_cents,
+            'weekly_price_cents' => $this->weekly_price_cents,
+            'monthly_price_cents' => $this->monthly_price_cents,
             'is_instant_bookable' => $this->is_instant_bookable,
+            'year' => $this->year,
             'primary_image_url' => $primaryImage,
             'average_rating' => $this->average_rating,
             'reviews_count' => $this->reviews_count,

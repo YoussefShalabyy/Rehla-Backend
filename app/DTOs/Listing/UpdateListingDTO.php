@@ -10,7 +10,9 @@ readonly class UpdateListingDTO
 {
     public function __construct(
         public ?string $title,
+        public ?string $titleAr = null,
         public ?string $description,
+        public ?string $descriptionAr = null,
         public ?string $category,
         public ?int $basePriceCents,
         public ?int $originalBasePriceCents,
@@ -19,6 +21,7 @@ readonly class UpdateListingDTO
         public ?int $cleaningFeeCents,
         public ?int $extraGuestFeeCents,
         public ?int $maxGuests,
+        public ?int $year,
         public ?array $amenityIds,
     ) {}
 
@@ -26,7 +29,9 @@ readonly class UpdateListingDTO
     {
         return new self(
             title: $request->validated('title'),
+            titleAr: $request->validated('title_ar'),
             description: $request->validated('description'),
+            descriptionAr: $request->validated('description_ar'),
             category: $request->validated('category'),
             basePriceCents: $request->validated('base_price_cents') !== null ? (int) $request->validated('base_price_cents') : null,
             originalBasePriceCents: $request->validated('original_base_price_cents') !== null ? (int) $request->validated('original_base_price_cents') : null,
@@ -35,6 +40,7 @@ readonly class UpdateListingDTO
             cleaningFeeCents: $request->validated('cleaning_fee_cents') !== null ? (int) $request->validated('cleaning_fee_cents') : null,
             extraGuestFeeCents: $request->validated('extra_guest_fee_cents') !== null ? (int) $request->validated('extra_guest_fee_cents') : null,
             maxGuests: $request->validated('max_guests') ? (int) $request->validated('max_guests') : null,
+            year: $request->validated('year') ? (int) $request->validated('year') : null,
             amenityIds: $request->validated('amenity_ids'),
         );
     }

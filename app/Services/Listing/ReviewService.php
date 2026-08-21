@@ -74,6 +74,23 @@ class ReviewService
     }
 
     /**
+     * Admin updates an existing review.
+     */
+    public function updateAdminReview(Review $review, int $rating, ?string $comment, ?string $reviewerName): Review
+    {
+        $review->update([
+            'rating'        => $rating,
+            'comment'       => $comment,
+            'reviewer_name' => $reviewerName,
+        ]);
+
+        // Recalculate listing rating since the rating value might have changed
+        $this->recalculateListingRating($review->listing);
+
+        return $review;
+    }
+
+    /**
      * Admin replies to a review from the dashboard.
      */
     public function adminReply(Review $review, string $reply, User $admin): Review

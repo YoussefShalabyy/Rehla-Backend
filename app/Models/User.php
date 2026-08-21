@@ -31,6 +31,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'role',
+        'permissions',
         'status',
         'avatar_url',
         'last_login_at',
@@ -60,6 +61,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'last_login_at'     => 'datetime',
             'password'          => 'hashed',
+            'permissions'       => 'array',
             'role'              => UserRole::class,
             'status'            => UserStatus::class,
         ];

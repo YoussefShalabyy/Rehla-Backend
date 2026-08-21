@@ -62,19 +62,22 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
-            'phone'    => ['nullable', 'string', 'max:20'],
+            'email'       => ['required', 'email', 'unique:users,email'],
+            'password'    => ['required', 'string', 'min:8'],
+            'phone'       => ['nullable', 'string', 'max:20'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string'],
         ]);
 
         $user = User::create([
-            'uuid'     => (string) Str::uuid(),
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'phone'    => $validated['phone'] ?? null,
-            'password' => Hash::make($validated['password']),
-            'role'     => UserRole::Admin,
-            'status'   => UserStatus::Active,
+            'uuid'        => (string) Str::uuid(),
+            'name'        => $validated['name'],
+            'email'       => $validated['email'],
+            'phone'       => $validated['phone'] ?? null,
+            'password'    => Hash::make($validated['password']),
+            'role'        => UserRole::Admin,
+            'status'      => UserStatus::Active,
+            'permissions' => $validated['permissions'] ?? [],
         ]);
 
         // Create wallet for admin
@@ -146,5 +149,24 @@ class UserController extends Controller
         });
 
         return $this->success(['balance_cents' => $wallet->fresh()->balance_cents], 'Balance added successfully.');
+    }
+
+    /**
+     * Update admin permissions.
+     */
+    public function updatePermissions(Request $request, string $uuid): JsonResponse
+    {
+        $validated = $request->validate([
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string'],
+        ]);
+
+        $user = User::where('uuid', $uuid)->where('role', UserRole::Admin)->firstOrFail();
+        
+        $user->update([
+            'permissions' => $validated['permissions']
+        ]);
+
+        return $this->success(new UserAdminResource($user), 'Permissions updated successfully.');
     }
 }

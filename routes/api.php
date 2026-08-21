@@ -83,7 +83,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         // Admin Listings — full CRUD + approve/reject + media + availability
-        Route::prefix('admin/listings')->group(function () {
+        Route::prefix('admin/listings')->middleware('admin.permission:manage_listings')->group(function () {
             Route::get('/',                              [\App\Http\Controllers\Api\Admin\ListingController::class, 'index']);
             Route::post('/',                             [\App\Http\Controllers\Api\Admin\ListingController::class, 'store']);
             Route::get('/{uuid}',                        [\App\Http\Controllers\Api\Admin\ListingController::class, 'show']);
@@ -99,31 +99,33 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         // Admin Media (global — delete / set primary by media uuid)
-        Route::prefix('admin/media')->group(function () {
+        Route::prefix('admin/media')->middleware('admin.permission:manage_listings')->group(function () {
             Route::delete('/{uuid}',         [\App\Http\Controllers\Api\Admin\MediaController::class, 'destroy']);
             Route::put('/{uuid}/primary',    [\App\Http\Controllers\Api\Admin\MediaController::class, 'setPrimary']);
         });
 
         // Admin Users
-        Route::prefix('admin/users')->group(function () {
+        Route::prefix('admin/users')->middleware('admin.permission:manage_users')->group(function () {
             Route::get('/',              [\App\Http\Controllers\Api\Admin\UserController::class, 'index']);
             Route::get('/{uuid}',        [\App\Http\Controllers\Api\Admin\UserController::class, 'show']);
             Route::post('/',             [\App\Http\Controllers\Api\Admin\UserController::class, 'store']);
             Route::put('/{uuid}/status', [\App\Http\Controllers\Api\Admin\UserController::class, 'updateStatus']);
+            Route::put('/{uuid}/permissions', [\App\Http\Controllers\Api\Admin\UserController::class, 'updatePermissions']);
             Route::delete('/{uuid}',     [\App\Http\Controllers\Api\Admin\UserController::class, 'destroy']);
             Route::post('/{uuid}/wallet/add-balance', [\App\Http\Controllers\Api\Admin\UserController::class, 'addBalance']);
         });
 
         // Admin Bookings
-        Route::prefix('admin/bookings')->group(function () {
+        Route::prefix('admin/bookings')->middleware('admin.permission:manage_bookings')->group(function () {
             Route::get('/',               [\App\Http\Controllers\Api\Admin\BookingController::class, 'index']);
             Route::put('/{uuid}/status',  [\App\Http\Controllers\Api\Admin\BookingController::class, 'updateStatus']);
         });
 
         // Admin Reviews
-        Route::prefix('admin/reviews')->group(function () {
+        Route::prefix('admin/reviews')->middleware('admin.permission:manage_reviews')->group(function () {
             Route::get('/',               [\App\Http\Controllers\Api\Admin\ReviewController::class, 'index']);
             Route::post('/',              [\App\Http\Controllers\Api\Admin\ReviewController::class, 'store']);
+            Route::put('/{uuid}',         [\App\Http\Controllers\Api\Admin\ReviewController::class, 'update']);
             Route::put('/{uuid}/moderate',[\App\Http\Controllers\Api\Admin\ReviewController::class, 'moderate']);
             Route::post('/{uuid}/reply',  [\App\Http\Controllers\Api\Admin\ReviewController::class, 'reply']);
         });
@@ -140,7 +142,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         // Admin Destinations
-        Route::prefix('admin/destinations')->group(function () {
+        Route::prefix('admin/destinations')->middleware('admin.permission:manage_destinations')->group(function () {
             Route::get('/',              [\App\Http\Controllers\Api\Admin\DestinationController::class, 'index']);
             Route::post('/',             [\App\Http\Controllers\Api\Admin\DestinationController::class, 'store']);
             Route::put('/{uuid}',        [\App\Http\Controllers\Api\Admin\DestinationController::class, 'update']);
@@ -148,7 +150,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         // Admin Leads
-        Route::prefix('admin/leads')->group(function () {
+        Route::prefix('admin/leads')->middleware('admin.permission:manage_leads')->group(function () {
             Route::get('/', [\App\Http\Controllers\Api\Admin\LeadController::class, 'index']);
             Route::post('/mark-read', [\App\Http\Controllers\Api\Admin\LeadController::class, 'markRead']);
             Route::put('/{uuid}/status', [\App\Http\Controllers\Api\Admin\LeadController::class, 'updateStatus']);
@@ -158,11 +160,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('amenities', \App\Http\Controllers\Api\Admin\AmenityController::class);
         
         // Settings
-        Route::get('/settings', [\App\Http\Controllers\Api\Admin\PlatformSettingsController::class, 'index']);
-        Route::put('/settings', [\App\Http\Controllers\Api\Admin\PlatformSettingsController::class, 'update']);
+        Route::middleware('admin.permission:manage_settings')->group(function () {
+            Route::get('/settings', [\App\Http\Controllers\Api\Admin\PlatformSettingsController::class, 'index']);
+            Route::put('/settings', [\App\Http\Controllers\Api\Admin\PlatformSettingsController::class, 'update']);
+        });
         
         // Promo Codes
-        Route::apiResource('promo-codes', \App\Http\Controllers\Api\Admin\PromoCodeController::class);
+        Route::middleware('admin.permission:manage_promo_codes')->group(function () {
+            Route::apiResource('promo-codes', \App\Http\Controllers\Api\Admin\PromoCodeController::class);
+        });
     });
 
     // ── Customer Notifications ────────────────────────────────────────────────
