@@ -15,7 +15,11 @@ class Destination extends Model
 
     protected $fillable = [
         'name',
+        'name_ar',
+        'country',
+        'country_ar',
         'subtitle',
+        'subtitle_ar',
         'icon',
         'icon_color',
         'icon_bg',
@@ -45,5 +49,10 @@ class Destination extends Model
                 $model->uuid = (string) Str::uuid();
             }
         });
+    }
+
+    public function listings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Listing::class, 'city', 'name');
     }
 }

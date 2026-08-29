@@ -33,7 +33,19 @@ class ListingService
 
         $query->where('status', ListingStatus::Active);
 
-        // Location Logic: Proximity, IP Geolocation, or explicit City
+        // Home Section Override
+        if ($dto->homeSectionKey) {
+            $query->join('home_section_listing', 'listings.id', '=', 'home_section_listing.listing_id')
+                  ->where('home_section_listing.home_section_key', $dto->homeSectionKey)
+                  ->select('listings.*')
+                  ->orderBy('home_section_listing.sort_order', 'asc');
+                  
+            // When filtering by a home section, we don't apply IP or proximity sorting
+            // unless we want to, but usually home sections are strictly ordered by the admin.
+            return $query;
+        }
+
+        // Location Logic: Proximity or explicit City
         if ($dto->lat !== null && $dto->lng !== null) {
             // Haversine Proximity Filter & Sorting
             $haversine = "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))";
@@ -46,29 +58,8 @@ class ListingService
             if (!$dto->sortBy) {
                 $query->orderBy('distance', 'asc');
             }
-        } else {
-            $ipLocationApplied = false;
-            if ($dto->ipAddress && !$dto->city) {
-                // IP Geolocation (Cached to prevent blocking external HTTP requests on every load)
-                $position = \Illuminate\Support\Facades\Cache::remember("ip_location:{$dto->ipAddress}", now()->addHours(24), function () use ($dto) {
-                    return \Stevebauman\Location\Facades\Location::get($dto->ipAddress);
-                });
-
-                if ($position) {
-                    if ($position->cityName) {
-                        $query->where('city', $position->cityName);
-                        $ipLocationApplied = true;
-                    }
-                    if ($position->countryName) {
-                        $query->where('country', $position->countryName);
-                    }
-                }
-            }
-
-            // If IP geolocation wasn't applied or failed, use the explicit city filter if provided
-            if (!$ipLocationApplied && $dto->city) {
-                $query->where('city', $dto->city);
-            }
+        } elseif ($dto->city) {
+            $query->where('city', $dto->city);
         }
 
         // Other filters

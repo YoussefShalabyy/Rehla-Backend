@@ -27,6 +27,35 @@ class ListingController extends Controller
         return $this->paginated($paginator, ListingListResource::class);
     }
 
+    public function activeCategories(): JsonResponse
+    {
+        $activePropertyTypes = \App\Models\Listing::where('status', \App\Enums\ListingStatus::Active)
+            ->whereNotNull('property_type')
+            ->select('property_type')
+            ->distinct()
+            ->pluck('property_type')
+            ->map(fn($enum) => $enum instanceof \BackedEnum ? $enum->value : (string) $enum)
+            ->toArray();
+
+        $activeCategories = \App\Models\Listing::where('status', \App\Enums\ListingStatus::Active)
+            ->whereNotNull('category')
+            ->select('category')
+            ->distinct()
+            ->pluck('category')
+            ->map(fn($enum) => $enum instanceof \BackedEnum ? $enum->value : (string) $enum)
+            ->toArray();
+
+        $merged = array_values(array_unique(array_merge($activePropertyTypes, $activeCategories)));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Active categories retrieved.',
+            'data'    => $merged,
+            'meta'    => null,
+            'errors'  => null,
+        ]);
+    }
+
     public function show(string $uuid): JsonResponse
     {
         $listing = $this->listingService->findByUuid($uuid);

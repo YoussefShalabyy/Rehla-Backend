@@ -39,6 +39,28 @@ Route::middleware('throttle:webhook')->prefix('webhooks')->group(function () {
     Route::post('/easykash', [\App\Http\Controllers\Api\Webhook\EasyKashWebhookController::class, 'handle']);
 });
 
+// ── Public Settings & Config ──────────────────────────────────────────────────
+Route::get('/platform-settings', function () {
+    $settings = \Illuminate\Support\Facades\DB::table('platform_settings')
+        ->whereIn('key', ['whatsapp_support'])
+        ->pluck('value', 'key')
+        ->toArray();
+    
+    if (!isset($settings['whatsapp_support'])) {
+        $settings['whatsapp_support'] = '+201000000000';
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Platform settings retrieved.',
+        'data'    => $settings,
+        'meta'    => null,
+        'errors'  => null,
+    ]);
+});
+
+Route::get('/active-categories', [\App\Http\Controllers\Api\Customer\ListingController::class, 'activeCategories']);
+
 // ── Public Listing Routes ─────────────────────────────────────────────────────
 Route::prefix('listings')->group(function () {
     Route::get('/',                    [\App\Http\Controllers\Api\Customer\ListingController::class, 'index']);
@@ -115,6 +137,13 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/{uuid}/wallet/add-balance', [\App\Http\Controllers\Api\Admin\UserController::class, 'addBalance']);
         });
 
+        // Admin Home Sections
+        Route::prefix('admin/home-sections')->middleware('admin.permission:manage_listings')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\Admin\HomeSectionController::class, 'index']);
+            Route::get('/{key}/listings', [\App\Http\Controllers\Api\Admin\HomeSectionController::class, 'show']);
+            Route::post('/{key}/sync', [\App\Http\Controllers\Api\Admin\HomeSectionController::class, 'sync']);
+        });
+
         // Admin Bookings
         Route::prefix('admin/bookings')->middleware('admin.permission:manage_bookings')->group(function () {
             Route::get('/',               [\App\Http\Controllers\Api\Admin\BookingController::class, 'index']);
@@ -160,10 +189,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::apiResource('amenities', \App\Http\Controllers\Api\Admin\AmenityController::class);
         
         // Settings
-        Route::middleware('admin.permission:manage_settings')->group(function () {
-            Route::get('/settings', [\App\Http\Controllers\Api\Admin\PlatformSettingsController::class, 'index']);
-            Route::put('/settings', [\App\Http\Controllers\Api\Admin\PlatformSettingsController::class, 'update']);
-        });
         
         // Promo Codes
         Route::middleware('admin.permission:manage_promo_codes')->group(function () {

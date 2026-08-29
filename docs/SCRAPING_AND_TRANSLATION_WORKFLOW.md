@@ -22,6 +22,11 @@ The raw scraped text is often unstructured, unprofessional, or contains unwanted
 - Do **not** use AI-like formatting (such as `**` for bolding or raw asterisks). Use standard line breaks and hyphens (`-`) for lists.
 - Maintain a luxurious, professional tone suitable for a high-end booking app.
 
+## 2.1 Handling Location & Address Translations
+The location data (Address, City, Country) must be available in both English and Arabic so it matches the UI language selected by the user.
+- **Rule:** You MUST provide both English (`address`, `city`, `country`) and Arabic (`address_ar`, `city_ar`, `country_ar`) translations when saving a listing.
+- **Important:** The underlying logic for maps (Google Maps, Apple Maps) still relies on the original English fields or coordinates. Therefore, the translated fields are strictly for **UI display purposes only** and should not disrupt the underlying location logic. Ensure accurate Arabic translation of the neighborhood, street, and city names.
+
 ## 3. Handling Amenities
 Amenities must be stored in both English (`name`) and Arabic (`name_ar`).
 - Compare the scraped amenities against the `amenities` table in the database.

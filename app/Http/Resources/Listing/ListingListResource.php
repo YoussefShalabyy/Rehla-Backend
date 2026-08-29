@@ -24,13 +24,16 @@ class ListingListResource extends JsonResource
 
         $lang = $request->header('Accept-Language', 'en');
         $resolvedTitle = ($lang === 'ar' && !empty($this->title_ar)) ? $this->title_ar : $this->title;
+        $resolvedCity = ($lang === 'ar' && !empty($this->city_ar)) ? $this->city_ar : $this->city;
 
         return [
             'uuid' => $this->uuid,
             'type' => $this->type,
             'title' => $resolvedTitle,
             'title_ar' => $this->title_ar,
-            'city' => $this->city,
+            'city' => $resolvedCity,
+            'city_en' => $this->city,
+            'city_ar' => $this->city_ar,
             'base_price_cents' => $this->base_price_cents,
             'original_base_price_cents' => $this->original_base_price_cents,
             'weekly_price_cents' => $this->weekly_price_cents,
@@ -40,6 +43,8 @@ class ListingListResource extends JsonResource
             'primary_image_url' => $primaryImage,
             'average_rating' => $this->average_rating,
             'reviews_count' => $this->reviews_count,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
             'is_wishlisted' => $this->when($request->user('sanctum'), function () use ($request) {
                 if ($this->relationLoaded('wishlists')) {
                     return $this->wishlists->contains('user_id', $request->user('sanctum')->id);

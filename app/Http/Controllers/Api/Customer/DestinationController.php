@@ -16,6 +16,7 @@ class DestinationController extends Controller
     public function suggested(): JsonResponse
     {
         $destinations = Destination::where('is_active', true)
+            ->withCount(['listings' => fn($q) => $q->active()])
             ->orderBy('sort_order', 'asc')
             ->orderBy('name', 'asc')
             ->get();
@@ -23,7 +24,7 @@ class DestinationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Suggested destinations retrieved successfully.',
-            'data'    => $destinations,
+            'data'    => \App\Http\Resources\Destination\DestinationResource::collection($destinations),
             'meta'    => null,
             'errors'  => null,
         ]);

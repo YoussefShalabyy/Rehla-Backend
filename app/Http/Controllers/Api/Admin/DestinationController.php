@@ -35,6 +35,7 @@ class DestinationController extends Controller
     {
         $validated = $request->validate([
             'name'       => 'required|string|max:255',
+            'country'    => 'nullable|string|max:255',
             'subtitle'   => 'nullable|string|max:255',
             'icon'       => 'nullable|string|max:255',
             'icon_color' => 'nullable|string|max:255',
@@ -63,6 +64,7 @@ class DestinationController extends Controller
 
         $validated = $request->validate([
             'name'       => 'string|max:255',
+            'country'    => 'nullable|string|max:255',
             'subtitle'   => 'nullable|string|max:255',
             'icon'       => 'nullable|string|max:255',
             'icon_color' => 'nullable|string|max:255',

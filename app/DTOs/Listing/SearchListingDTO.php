@@ -27,6 +27,7 @@ readonly class SearchListingDTO
         public ?string $q,
         public ?string $sortBy,
         public ?string $sortDirection,
+        public ?string $homeSectionKey,
         public int $page = 1,
         public int $perPage = 20,
     ) {}
@@ -50,6 +51,7 @@ readonly class SearchListingDTO
             q: $request->query('q'),
             sortBy: $request->query('sort_by'),
             sortDirection: $request->query('sort_direction'),
+            homeSectionKey: $request->query('home_section'),
             page: (int) $request->query('page', 1),
             perPage: (int) $request->query('per_page', 20),
         );

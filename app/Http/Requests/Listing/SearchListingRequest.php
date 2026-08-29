@@ -16,6 +16,7 @@ class SearchListingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'q' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:255'],
             'type' => ['nullable', 'in:property,car'],
             'property_type' => ['nullable', 'in:hotel,apartment,villa,room'],
@@ -27,6 +28,7 @@ class SearchListingRequest extends FormRequest
             'lat' => ['nullable', 'numeric'],
             'lng' => ['nullable', 'numeric'],
             'radius' => ['nullable', 'integer', 'min:1', 'max:500'],
+            'home_section' => ['nullable', 'string', 'exists:home_sections,key'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];

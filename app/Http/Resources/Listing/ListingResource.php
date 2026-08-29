@@ -15,6 +15,10 @@ class ListingResource extends JsonResource
         $lang = $request->header('Accept-Language', 'en');
         $resolvedTitle = ($lang === 'ar' && !empty($this->title_ar)) ? $this->title_ar : $this->title;
         $resolvedDescription = ($lang === 'ar' && !empty($this->description_ar)) ? $this->description_ar : $this->description;
+        
+        $resolvedAddress = ($lang === 'ar' && !empty($this->address_ar)) ? $this->address_ar : $this->address;
+        $resolvedCity = ($lang === 'ar' && !empty($this->city_ar)) ? $this->city_ar : $this->city;
+        $resolvedCountry = ($lang === 'ar' && !empty($this->country_ar)) ? $this->country_ar : $this->country;
 
         return [
             'uuid' => $this->uuid,
@@ -25,9 +29,15 @@ class ListingResource extends JsonResource
             'title_ar' => $this->title_ar,
             'description' => $resolvedDescription,
             'description_ar' => $this->description_ar,
-            'address' => $this->address,
-            'city' => $this->city,
-            'country' => $this->country,
+            'address' => $resolvedAddress,
+            'address_en' => $this->address,
+            'address_ar' => $this->address_ar,
+            'city' => $resolvedCity,
+            'city_en' => $this->city,
+            'city_ar' => $this->city_ar,
+            'country' => $resolvedCountry,
+            'country_en' => $this->country,
+            'country_ar' => $this->country_ar,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
             'base_price_cents' => $this->base_price_cents,
@@ -47,17 +57,7 @@ class ListingResource extends JsonResource
             
             // Relationships
             'owner' => new AuthUserResource($this->whenLoaded('owner')),
-            'amenities' => $this->whenLoaded('amenities', function () use ($request) {
-                return $this->amenities->map(function ($amenity) use ($request) {
-                    $lang = $request->header('Accept-Language', 'en');
-                    $name = ($lang === 'ar' && !empty($amenity->name_ar)) ? $amenity->name_ar : $amenity->name;
-                    return [
-                        'id' => $amenity->id,
-                        'name' => $name,
-                        'icon' => $amenity->icon,
-                    ];
-                });
-            }),
+            'amenities' => AmenityResource::collection($this->whenLoaded('amenities')),
             'media' => $this->whenLoaded('media', function () {
                 return $this->media->map(function ($m) {
                     return [
