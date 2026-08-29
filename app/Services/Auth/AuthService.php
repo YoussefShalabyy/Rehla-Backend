@@ -14,6 +14,10 @@ use Illuminate\Support\Str;
 
 class AuthService
 {
+    public function __construct(private readonly \App\Interfaces\MediaStorageInterface $mediaStorage)
+    {
+    }
+
     /**
      * @return array{user: User, token: string}
      */
@@ -22,8 +26,8 @@ class AuthService
         $user = User::create([
             'uuid' => (string) Str::uuid(),
             'name' => $dto->name,
-            'email' => $dto->email,
-            'phone' => $dto->phone ?? null,
+            'email' => $dto->email ?? null,
+            'phone' => $dto->phone,
             'password' => Hash::make($dto->password),
             'role' => $dto->role,
         ]);
@@ -77,7 +81,7 @@ class AuthService
         $user->tokens()->delete();
     }
 
-    public function findOrCreateSocialUser(string $provider, string $providerId, string $email, string $name): User
+    public function findOrCreateSocialUser(string $provider, string $providerId, string $email, string $name, ?string $avatarUrl = null): User
     {
         $user = User::where('provider_id', $providerId)
             ->orWhere('email', $email)
@@ -92,6 +96,7 @@ class AuthService
                 'role' => \App\Enums\UserRole::Customer,
                 'provider' => $provider,
                 'provider_id' => $providerId,
+                'avatar_url' => $avatarUrl,
             ]);
             
             event(new Registered($user));
@@ -109,6 +114,9 @@ class AuthService
                     'provider_id' => $providerId,
                 ]);
             }
+            if (! $user->avatar_url && $avatarUrl) {
+                $user->update(['avatar_url' => $avatarUrl]);
+            }
             $user->update(['last_login_at' => now()]);
         }
 
@@ -122,5 +130,17 @@ class AuthService
 
         // Soft delete the user
         $user->delete();
+    }
+
+    public function updateProfile(User $user, array $data, ?\Illuminate\Http\UploadedFile $avatar = null): User
+    {
+        if ($avatar) {
+            $uploadResult = $this->mediaStorage->upload($avatar, 'avatars');
+            $data['avatar_url'] = $uploadResult['url'];
+        }
+
+        $user->update($data);
+
+        return $user;
     }
 }

@@ -14,6 +14,7 @@ it('registers a new customer successfully', function () {
     $response = $this->postJson('/api/v1/auth/register', [
         'name' => 'John Doe',
         'email' => 'john@example.com',
+        'phone' => '+201000000000',
         'password' => 'password123',
         'password_confirmation' => 'password123',
         'role' => 'customer',
@@ -47,6 +48,7 @@ it('cannot register with duplicate email', function () {
     $response = $this->postJson('/api/v1/auth/register', [
         'name' => 'John Doe',
         'email' => 'duplicate@example.com',
+        'phone' => '+201000000001',
         'password' => 'password123',
         'password_confirmation' => 'password123',
         'role' => 'customer',
@@ -60,6 +62,7 @@ it('cannot self-register as admin', function () {
     $response = $this->postJson('/api/v1/auth/register', [
         'name' => 'Admin wannabe',
         'email' => 'admin@example.com',
+        'phone' => '+201000000002',
         'password' => 'password123',
         'password_confirmation' => 'password123',
         'role' => 'admin',

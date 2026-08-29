@@ -85,7 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Auth Management ───────────────────────────────────────────────────────
     Route::prefix('auth')->group(function () {
         Route::get('/me',        [\App\Http\Controllers\Api\Auth\AuthController::class, 'me']);
-        Route::put('/profile',   [\App\Http\Controllers\Api\Auth\AuthController::class, 'updateProfile']);
+        Route::post('/profile',  [\App\Http\Controllers\Api\Auth\AuthController::class, 'updateProfile']);
         Route::post('/push-token', [\App\Http\Controllers\Api\Auth\AuthController::class, 'updatePushToken']);
         Route::delete('/delete', [\App\Http\Controllers\Api\Auth\AuthController::class, 'deleteAccount']);
         Route::post('/logout',   [\App\Http\Controllers\Api\Auth\AuthController::class, 'logout']);

@@ -20,7 +20,9 @@ class AuthServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->authService = new AuthService();
+        $this->authService = new AuthService(
+            $this->app->make(\App\Interfaces\MediaStorageInterface::class)
+        );
     }
 
     public function test_delete_account_soft_deletes_user_and_revokes_tokens()

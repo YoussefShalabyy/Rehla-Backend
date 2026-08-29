@@ -62,9 +62,9 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'name'     => ['required', 'string', 'max:255'],
-            'email'       => ['required', 'email', 'unique:users,email'],
+            'email'       => ['nullable', 'email', 'unique:users,email'],
             'password'    => ['required', 'string', 'min:8'],
-            'phone'       => ['nullable', 'string', 'max:20'],
+            'phone'       => ['required', 'string', 'max:20', 'unique:users,phone'],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string'],
         ]);
@@ -72,8 +72,8 @@ class UserController extends Controller
         $user = User::create([
             'uuid'        => (string) Str::uuid(),
             'name'        => $validated['name'],
-            'email'       => $validated['email'],
-            'phone'       => $validated['phone'] ?? null,
+            'email'       => $validated['email'] ?? null,
+            'phone'       => $validated['phone'],
             'password'    => Hash::make($validated['password']),
             'role'        => UserRole::Admin,
             'status'      => UserStatus::Active,

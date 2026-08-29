@@ -70,6 +70,7 @@ class EndToEndHappyPathTest extends TestCase
         $customerResponse = $this->postJson('/api/v1/auth/register', [
             'name'                  => 'Customer Ahmed',
             'email'                 => 'customer@rehla.com',
+            'phone'                 => '+201012345678',
             'password'              => 'password123',
             'password_confirmation' => 'password123',
             'device_name'           => 'test_device',

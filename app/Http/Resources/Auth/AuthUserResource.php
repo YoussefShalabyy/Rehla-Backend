@@ -25,6 +25,11 @@ class AuthUserResource extends JsonResource
             'status' => $this->status,
             'email_verified_at' => $this->email_verified_at,
             'avatar_url' => $this->avatar_url,
+            'stats' => [
+                'trips' => $this->trips_count ?? 0,
+                'saved' => $this->saved_count ?? 0,
+                'reviews' => $this->reviews_count ?? 0,
+            ],
         ];
     }
 }

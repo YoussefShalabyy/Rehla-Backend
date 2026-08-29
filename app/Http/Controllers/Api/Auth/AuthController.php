@@ -53,8 +53,14 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
+        $user = $request->user()->loadCount([
+            'bookings as trips_count' => fn ($query) => $query->where('status', \App\Enums\BookingStatus::Completed),
+            'reviews as reviews_count',
+            'wishlists as saved_count',
+        ]);
+
         return $this->success(
-            new AuthUserResource($request->user()),
+            new AuthUserResource($user),
             'User profile retrieved successfully.'
         );
     }
@@ -64,10 +70,14 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'phone' => 'nullable|string|max:20',
+            'avatar' => 'nullable|image|max:5120',
         ]);
 
-        $user = $request->user();
-        $user->update($request->only('name', 'phone'));
+        $user = $this->authService->updateProfile(
+            $request->user(),
+            $request->only('name', 'phone'),
+            $request->file('avatar')
+        );
 
         return $this->success(
             new AuthUserResource($user),
@@ -83,6 +93,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'name' => 'required|string',
             'provider_id' => 'required|string',
+            'avatar_url' => 'nullable|string|url',
         ]);
 
         // MOCK validation: Normally we verify $request->id_token with Google
@@ -90,7 +101,8 @@ class AuthController extends Controller
             'google',
             $request->provider_id,
             $request->email,
-            $request->name
+            $request->name,
+            $request->avatar_url
         );
 
         $token = $user->createToken('auth_token')->plainTextToken;

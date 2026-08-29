@@ -11,8 +11,8 @@ readonly class RegisterDTO
 {
     public function __construct(
         public string $name,
-        public string $email,
-        public ?string $phone,
+        public ?string $email,
+        public string $phone,
         public string $password,
         public UserRole $role = UserRole::Customer,
     ) {}
