@@ -33,6 +33,7 @@ class DestinationResource extends JsonResource
             'icon' => $this->icon,
             'icon_color' => $this->icon_color,
             'icon_bg' => $this->icon_bg,
+            'image_url' => $this->image_url,
             'is_active' => $this->is_active,
             'sort_order' => $this->sort_order,
             'listings_count' => $this->whenCounted('listings'),

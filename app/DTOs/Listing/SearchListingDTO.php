@@ -46,7 +46,7 @@ readonly class SearchListingDTO
             maxPriceCents: $request->query('max_price_cents') ? (int) $request->query('max_price_cents') : null,
             lat: $request->query('lat') ? (float) $request->query('lat') : null,
             lng: $request->query('lng') ? (float) $request->query('lng') : null,
-            radius: (int) $request->query('radius', 50),
+            radius: (int) $request->query('radius', \App\Models\PlatformSetting::get('search_radius', 50)),
             ipAddress: $request->ip(),
             q: $request->query('q'),
             sortBy: $request->query('sort_by'),

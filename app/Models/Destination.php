@@ -23,6 +23,7 @@ class Destination extends Model
         'icon',
         'icon_color',
         'icon_bg',
+        'image_url',
         'is_active',
         'sort_order',
     ];

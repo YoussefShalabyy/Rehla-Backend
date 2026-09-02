@@ -126,6 +126,10 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/{uuid}/primary',    [\App\Http\Controllers\Api\Admin\MediaController::class, 'setPrimary']);
         });
 
+        // Admin Generic Uploads
+        Route::post('admin/upload/image', [\App\Http\Controllers\Api\Admin\UploadController::class, 'uploadImage'])
+            ->middleware('admin.permission:manage_settings');
+
         // Admin Users
         Route::prefix('admin/users')->middleware('admin.permission:manage_users')->group(function () {
             Route::get('/',              [\App\Http\Controllers\Api\Admin\UserController::class, 'index']);

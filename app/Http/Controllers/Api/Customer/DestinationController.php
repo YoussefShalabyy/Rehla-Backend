@@ -15,8 +15,13 @@ class DestinationController extends Controller
      */
     public function suggested(): JsonResponse
     {
+        // Use a flexible subquery to allow fuzzy matching on city names (e.g. 'El Gouna' matches 'Gouna')
         $destinations = Destination::where('is_active', true)
-            ->withCount(['listings' => fn($q) => $q->active()])
+            ->addSelect(['listings_count' => \App\Models\Listing::selectRaw('count(*)')
+                ->whereRaw('listings.city LIKE CONCAT("%", destinations.name, "%")')
+                ->active()
+            ])
+            ->having('listings_count', '>', 0)
             ->orderBy('sort_order', 'asc')
             ->orderBy('name', 'asc')
             ->get();

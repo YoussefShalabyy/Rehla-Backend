@@ -40,6 +40,7 @@ class DestinationController extends Controller
             'icon'       => 'nullable|string|max:255',
             'icon_color' => 'nullable|string|max:255',
             'icon_bg'    => 'nullable|string|max:255',
+            'image_url'  => 'nullable|string|max:2048',
             'is_active'  => 'boolean',
             'sort_order' => 'integer',
         ]);
@@ -69,6 +70,7 @@ class DestinationController extends Controller
             'icon'       => 'nullable|string|max:255',
             'icon_color' => 'nullable|string|max:255',
             'icon_bg'    => 'nullable|string|max:255',
+            'image_url'  => 'nullable|string|max:2048',
             'is_active'  => 'boolean',
             'sort_order' => 'integer',
         ]);
