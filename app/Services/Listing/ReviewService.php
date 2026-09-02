@@ -138,6 +138,18 @@ class ReviewService
     }
 
     /**
+     * Delete an existing review.
+     */
+    public function deleteAdminReview(Review $review): void
+    {
+        $listing = $review->listing;
+        $review->delete();
+
+        // Recalculate listing rating after deletion
+        $this->recalculateListingRating($listing);
+    }
+
+    /**
      * Get paginated approved reviews for a listing.
      */
     public function getListingReviews(Listing $listing, int $perPage = 20): LengthAwarePaginator

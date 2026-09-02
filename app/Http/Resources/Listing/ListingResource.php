@@ -61,6 +61,7 @@ class ListingResource extends JsonResource
             'media' => $this->whenLoaded('media', function () {
                 return $this->media->map(function ($m) {
                     return [
+                        'uuid' => $m->uuid,
                         'url' => $m->url,
                         'type' => $m->type,
                         'is_primary' => $m->is_primary,

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Listing;
 use App\Models\User;
+use App\Models\Amenity;
 use App\Services\AmenityService;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,27 @@ class ScrapeMalekCarsBulkCommand extends Command
     {
         $this->info('Starting bulk car insertion...');
 
+        // Pre-seed all car amenities with Arabic translations and icons
+        $carAmenities = [
+            ['name' => 'Air Conditioning', 'name_ar' => 'تكييف هواء', 'icon' => 'ac_unit'],
+            ['name' => 'Bluetooth', 'name_ar' => 'بلوتوث', 'icon' => 'bluetooth'],
+            ['name' => 'Rear Camera', 'name_ar' => 'كاميرا خلفية', 'icon' => 'camera_rear'],
+            ['name' => 'Cruise Control', 'name_ar' => 'مثبت سرعة', 'icon' => 'speed'],
+            ['name' => 'Leather Seats', 'name_ar' => 'مقاعد جلدية', 'icon' => 'airline_seat_recline_extra'],
+            ['name' => 'GPS Navigation', 'name_ar' => 'نظام خرائط (GPS)', 'icon' => 'explore'],
+            ['name' => 'Parking Sensors', 'name_ar' => 'حساسات ركن', 'icon' => 'sensors'],
+            ['name' => 'USB Charging Ports', 'name_ar' => 'منافذ شحن USB', 'icon' => 'usb'],
+            ['name' => 'Touchscreen Display', 'name_ar' => 'شاشة لمس', 'icon' => 'touch_app'],
+            ['name' => 'ABS Brakes', 'name_ar' => 'فرامل ABS', 'icon' => 'car_crash'],
+        ];
+
+        foreach ($carAmenities as $am) {
+            Amenity::updateOrCreate(
+                ['name' => $am['name'], 'type' => 'car'],
+                ['name_ar' => $am['name_ar'], 'icon' => $am['icon']]
+            );
+        }
+
         $owner = User::where('role', 'customer')->first() ?? User::factory()->create(['role' => 'customer']);
 
         $listingsData = [
@@ -28,14 +50,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة نيسان صني 2022 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'daily',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Maadi',
+                'address_ar' => 'المعادي',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.038437327256055,
-                'longitude' => 31.21165914955514,
+                'latitude' => 30.061187769599893,
+                'longitude' => 31.22860426638036,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -43,17 +65,19 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'monthly_price_cents' => 2040000,
                 'status' => 'active',
                 'images' => [
-                    'https://malekcars.com/wp-content/uploads/2026/08/efJyFQhAxSVMASytI215JdcTmey67qtF6nwNCANV.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/QPYtGS2HofnjU2n9SNsqOtRJL7Csr6YNJhcPaHUN.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/QdTlp5TZKU4aqkK5BU8U8w5MM8PLrTiiprrgP050.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/fzFxFGAcz3vqaBA1m694xjytkTyhtqgQljEvLyZB.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/FwqP4xW1tJ6pmumPs9JEx7h6yxbA5GWS6whBpci9.jpg'
+                    'https://malekcars.com/wp-content/uploads/2026/08/QPYtGS2HofnjU2n9SNsqOtRJL7Csr6YNJhcPaHUN.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/FwqP4xW1tJ6pmumPs9JEx7h6yxbA5GWS6whBpci9.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/QdTlp5TZKU4aqkK5BU8U8w5MM8PLrTiiprrgP050.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/efJyFQhAxSVMASytI215JdcTmey67qtF6nwNCANV.jpg'
                 ],
                 'amenities' => [
-                    'Cruise Control',
                     'Bluetooth',
                     'Leather Seats',
-                    'Rear Camera'
+                    'Rear Camera',
+                    'Touchscreen Display',
+                    'Parking Sensors',
+                    'Air Conditioning'
                 ]
             ],
             [
@@ -63,14 +87,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة هيونداي اكسنت RB 2026 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'daily',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Nasr City',
+                'address_ar' => 'مدينة نصر',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.07569613941241,
-                'longitude' => 31.24507238691218,
+                'latitude' => 30.044310124607616,
+                'longitude' => 31.266006333853678,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -78,17 +102,16 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'monthly_price_cents' => 3060000,
                 'status' => 'active',
                 'images' => [
-                    'https://malekcars.com/wp-content/uploads/2026/08/EL2Ik3n1dobeoKLvn4oYGRflwUZPZdtJaAGc3jqI.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/2Kju2nQS5epaLlYZtl3VZbaopKZyPJq74EzsofqA.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/M2GiXJtVP1PlDoIuI97g5ZVoqVslbx5OiZkJNLRe.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/gCtb5k5Nbm58Ffot1ieI6INH1s0QaTBNbeAVj7OL.jpg'
+                    'https://malekcars.com/wp-content/uploads/2026/08/gCtb5k5Nbm58Ffot1ieI6INH1s0QaTBNbeAVj7OL.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/2Kju2nQS5epaLlYZtl3VZbaopKZyPJq74EzsofqA.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/EL2Ik3n1dobeoKLvn4oYGRflwUZPZdtJaAGc3jqI.jpg'
                 ],
                 'amenities' => [
-                    'Leather Seats',
-                    'Bluetooth',
+                    'USB Charging Ports',
                     'Air Conditioning',
-                    'ABS Brakes',
-                    'Touchscreen Display',
+                    'Parking Sensors',
+                    'GPS Navigation',
                     'Rear Camera'
                 ]
             ],
@@ -99,14 +122,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة تويوتا كورولا 2022 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'daily',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Nasr City',
+                'address_ar' => 'مدينة نصر',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.0783988217659,
-                'longitude' => 31.256472170341333,
+                'latitude' => 30.07832531744715,
+                'longitude' => 31.2419167709902,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -114,23 +137,21 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'monthly_price_cents' => 2550000,
                 'status' => 'active',
                 'images' => [
-                    'https://malekcars.com/wp-content/uploads/2026/08/TLgmgipOmznR18c6007V4E9XsKdZKNcIma7z9Guy.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/laiZEHcXe5t7kdS0D7nggtFqI0iugLSSjT2M4qSV.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/IuNgAntc8FQaRBJIGs716omIoXmRPiC53rT23SIX.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/d4jK1mMr2bZB3yW7dXteCBjRBnXheCl0mXTEqoqQ.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/x3KrsAbPT349sQ27fycskwTjIhjtUcOF8uBP5OHP.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/156QZ0r8cAkrZmbEE4Rt4DNBfSnQqXwxRlFQYHXA.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/JaIzzX1S1I83OnHVv4V3obAwAmzFhavenMrufcxG.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/TLgmgipOmznR18c6007V4E9XsKdZKNcIma7z9Guy.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/ofbxrEtkyg5mPn10l18eyR1hCZ7IegkpnyJ0654P.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/IuNgAntc8FQaRBJIGs716omIoXmRPiC53rT23SIX.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/JaIzzX1S1I83OnHVv4V3obAwAmzFhavenMrufcxG.jpg'
+                    'https://malekcars.com/wp-content/uploads/2026/08/laiZEHcXe5t7kdS0D7nggtFqI0iugLSSjT2M4qSV.jpg'
                 ],
                 'amenities' => [
                     'Parking Sensors',
-                    'Bluetooth',
                     'Cruise Control',
-                    'Air Conditioning',
-                    'ABS Brakes',
+                    'Rear Camera',
                     'GPS Navigation',
-                    'USB Charging Ports'
+                    'Bluetooth'
                 ]
             ],
             [
@@ -140,14 +161,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة بي ام دبليو 318 1999 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'luxury',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Mohandeseen',
+                'address_ar' => 'المهندسين',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 29.99885328996394,
-                'longitude' => 31.273444443546623,
+                'latitude' => 30.049674635308367,
+                'longitude' => 31.18705211296435,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -155,20 +176,18 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'monthly_price_cents' => 930000,
                 'status' => 'active',
                 'images' => [
-                    'https://malekcars.com/wp-content/uploads/2026/08/GKre0ntfmRCEbWYXqQMf82TfGcWkWP9TRnOaf5LS.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/JMyqDbpMOHHPXLOK6vvBJ6hdAVxAz7f7kSFsAyZX.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/MsIit6I0YCJI1jmp8BKWwMORixO8zYpookvy8rjq.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/vrQDE65ms4a3ebbA4b9PXUu0fmmb4GpvTewbGBIL.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/JMyqDbpMOHHPXLOK6vvBJ6hdAVxAz7f7kSFsAyZX.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/GKre0ntfmRCEbWYXqQMf82TfGcWkWP9TRnOaf5LS.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/uTI70fV5vUOOsPwGw0c7GQ6SrHXndNjHRY7GxJT4.jpg'
                 ],
                 'amenities' => [
-                    'ABS Brakes',
-                    'Touchscreen Display',
-                    'Rear Camera',
-                    'Air Conditioning',
                     'Parking Sensors',
                     'GPS Navigation',
-                    'Leather Seats'
+                    'Air Conditioning',
+                    'USB Charging Ports',
+                    'Cruise Control'
                 ]
             ],
             [
@@ -178,14 +197,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة شانجان السفن 2022 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'daily',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Nasr City',
+                'address_ar' => 'مدينة نصر',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.037051099747185,
-                'longitude' => 31.194215413101176,
+                'latitude' => 30.03219747841436,
+                'longitude' => 31.25136445212004,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -193,15 +212,18 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'monthly_price_cents' => 1425000,
                 'status' => 'active',
                 'images' => [
-                    'https://malekcars.com/wp-content/uploads/2026/08/P2R8h4SOcKKU5OXVwCc3ugJCQzM8HGsHMckkkrXS.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/4JL2TeFZmdElDi0cvXl1ISGf4rdNsNO8FRl4oiFy.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/P2R8h4SOcKKU5OXVwCc3ugJCQzM8HGsHMckkkrXS.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/fkSW5XPQVjmMNovax7kZ5quljRrSjtpetX8NGBSr.jpg'
                 ],
                 'amenities' => [
-                    'Rear Camera',
                     'Air Conditioning',
                     'ABS Brakes',
-                    'Parking Sensors'
+                    'USB Charging Ports',
+                    'Bluetooth',
+                    'Parking Sensors',
+                    'Rear Camera',
+                    'GPS Navigation'
                 ]
             ],
             [
@@ -211,14 +233,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة لادا جرانتا 2021 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'daily',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Nasr City',
+                'address_ar' => 'مدينة نصر',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.03127941298881,
-                'longitude' => 31.260530843134656,
+                'latitude' => 30.00113516640382,
+                'longitude' => 31.26875739502774,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -226,23 +248,22 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'monthly_price_cents' => 1350000,
                 'status' => 'active',
                 'images' => [
-                    'https://malekcars.com/wp-content/uploads/2026/08/pp7qEn6ZYCCvHACxu5hC0lTjkALF6WyrCBkUKK3Y.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/YqbOgUcas1Lbf3dHpEF1Tw1nmlgY7RYMWzsYTv19.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/HJ4kQRW08PMtne9SVzPTQjrVzJzol9uUYFqLHeVb.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/XcLXzUBr7f4ditFqlUp90W4UL4Io2uxGZ5WrZcdV.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/ws48juO3RWjE4NwMK7j9hwlB6XuGrxCItsoO1pQs.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/183gafrSv6ftxBfMCzVdkHyhM3ClyvaUwroJh6f8.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/nsCLCY1cjgbnrO5cGnnR2UJiCOAsQPsW4dMGu1M3.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/J3D54YYNlpALdhBCC5T39sXc6NdGJNQxrjab4ErN.jpg'
+                    'https://malekcars.com/wp-content/uploads/2026/08/pp7qEn6ZYCCvHACxu5hC0lTjkALF6WyrCBkUKK3Y.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/183gafrSv6ftxBfMCzVdkHyhM3ClyvaUwroJh6f8.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/ws48juO3RWjE4NwMK7j9hwlB6XuGrxCItsoO1pQs.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/XcLXzUBr7f4ditFqlUp90W4UL4Io2uxGZ5WrZcdV.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/J3D54YYNlpALdhBCC5T39sXc6NdGJNQxrjab4ErN.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/HJ4kQRW08PMtne9SVzPTQjrVzJzol9uUYFqLHeVb.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/YqbOgUcas1Lbf3dHpEF1Tw1nmlgY7RYMWzsYTv19.jpg'
                 ],
                 'amenities' => [
-                    'Leather Seats',
                     'Bluetooth',
+                    'Rear Camera',
                     'Parking Sensors',
-                    'GPS Navigation',
-                    'Touchscreen Display',
-                    'ABS Brakes',
-                    'Rear Camera'
+                    'Leather Seats',
+                    'Air Conditioning',
+                    'Touchscreen Display'
                 ]
             ],
             [
@@ -252,14 +273,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة شيفروليه كروز 2012 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'daily',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Mohandeseen',
+                'address_ar' => 'المهندسين',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.067766342265084,
-                'longitude' => 31.18607102490682,
+                'latitude' => 30.04711078547042,
+                'longitude' => 31.256779492144602,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -267,21 +288,23 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'monthly_price_cents' => 1230000,
                 'status' => 'active',
                 'images' => [
+                    'https://malekcars.com/wp-content/uploads/2026/08/BAJNsa1oiPLEbIrlCdcfZytzzxal3vZoHvQlwt4k.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/YWuMa1nsA1VNaQwY9t6rvAJoIr8bySbpfv8UaoMX.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/8avZCd5s3ftHsXvoPBVDPlJHCZVbdWERiqMiHFns.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/yO9Th7lCUcPNdE9eiFPOB46MIXsDWfivO8NToBgr.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/OsD1jLI1IN8TBASEGhjgGNbjku2FQ4WypUeOgECb.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/n5V1lhuhuSUjxwqRLIgejw6YibMcBA72yLnK3jiW.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/n2pRiajMh8OwIef9sk2zljhR9IaWY28Xt0cAex7I.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/BAJNsa1oiPLEbIrlCdcfZytzzxal3vZoHvQlwt4k.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/OsD1jLI1IN8TBASEGhjgGNbjku2FQ4WypUeOgECb.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/yO9Th7lCUcPNdE9eiFPOB46MIXsDWfivO8NToBgr.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/n5V1lhuhuSUjxwqRLIgejw6YibMcBA72yLnK3jiW.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/LeN0NJkmwgl9CRGJJCKqxwDkQ2b6BVBHaeHr1asq.jpg'
                 ],
                 'amenities' => [
-                    'GPS Navigation',
+                    'Parking Sensors',
                     'USB Charging Ports',
-                    'Cruise Control',
-                    'Rear Camera',
-                    'Air Conditioning'
+                    'ABS Brakes',
+                    'Air Conditioning',
+                    'Leather Seats',
+                    'GPS Navigation',
+                    'Rear Camera'
                 ]
             ],
             [
@@ -291,14 +314,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة رينو لوجان 2010 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'daily',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Nasr City',
+                'address_ar' => 'مدينة نصر',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.003328422150805,
-                'longitude' => 31.18600804842437,
+                'latitude' => 30.055776288514426,
+                'longitude' => 31.196773508889773,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -306,19 +329,19 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'monthly_price_cents' => 840000,
                 'status' => 'active',
                 'images' => [
-                    'https://malekcars.com/wp-content/uploads/2026/08/QKmetyE8zqU5LbLVerJ4oQ0nCuldFJpn5Lf3JKET.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/Ybd8a9gtcE1iu5OUYgrguLitsNi7WuESCXUPVasQ.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/2MwtaZPocfX2rd0m43HvFOvIWW5XowZU8KcUaz37.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/2RaU6jAGWcbyCPloTcpxal0Ks0ltlOefXprftqI7.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/g3kcplvd1txsqLOhIVIW3fmutVA9UAQiguCmt0eN.jpg'
+                    'https://malekcars.com/wp-content/uploads/2026/08/g3kcplvd1txsqLOhIVIW3fmutVA9UAQiguCmt0eN.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/2MwtaZPocfX2rd0m43HvFOvIWW5XowZU8KcUaz37.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/QKmetyE8zqU5LbLVerJ4oQ0nCuldFJpn5Lf3JKET.jpg'
                 ],
                 'amenities' => [
-                    'Parking Sensors',
-                    'Cruise Control',
-                    'Leather Seats',
+                    'GPS Navigation',
+                    'Touchscreen Display',
                     'Air Conditioning',
-                    'Bluetooth',
-                    'Rear Camera'
+                    'Leather Seats',
+                    'USB Charging Ports',
+                    'Cruise Control'
                 ]
             ],
             [
@@ -328,14 +351,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة هوندا HRV 2004 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'daily',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Maadi',
+                'address_ar' => 'المعادي',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.078110082519913,
-                'longitude' => 31.248502508943872,
+                'latitude' => 30.054294702414705,
+                'longitude' => 31.251487034204125,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -343,17 +366,17 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'monthly_price_cents' => 1800000,
                 'status' => 'active',
                 'images' => [
-                    'https://malekcars.com/wp-content/uploads/2026/08/FC5PUs6vkN1uWQZmAiGcucIMteo4kP4mysbJTAB1.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/YhIhCyu84NhOjFJh5xAADfD5bGTh4DQnfu9B0P62.jpg',
                     'https://malekcars.com/wp-content/uploads/2026/08/yLcJZriu7PTFg4TkMDks1iIC9UJVSNah07U7VZA4.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/r3ms4vWbtfZIGgjVwoO2vXHVcuGfqKudRAkvLR9T.jpg',
-                    'https://malekcars.com/wp-content/uploads/2026/08/iItQmHJYo9S1HgtEtcFGqIbvcU19TJVKjDTPKZJU.jpg'
+                    'https://malekcars.com/wp-content/uploads/2026/08/iItQmHJYo9S1HgtEtcFGqIbvcU19TJVKjDTPKZJU.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/YhIhCyu84NhOjFJh5xAADfD5bGTh4DQnfu9B0P62.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/FC5PUs6vkN1uWQZmAiGcucIMteo4kP4mysbJTAB1.jpg',
+                    'https://malekcars.com/wp-content/uploads/2026/08/r3ms4vWbtfZIGgjVwoO2vXHVcuGfqKudRAkvLR9T.jpg'
                 ],
                 'amenities' => [
-                    'Cruise Control',
-                    'GPS Navigation',
-                    'Leather Seats',
-                    'Parking Sensors'
+                    'USB Charging Ports',
+                    'Touchscreen Display',
+                    'Rear Camera',
+                    'Bluetooth'
                 ]
             ],
             [
@@ -363,14 +386,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة بي ام دبليو اى اكس 2023 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'luxury',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Nasr City',
+                'address_ar' => 'مدينة نصر',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.08897425775487,
-                'longitude' => 31.195103384438685,
+                'latitude' => 30.069360370001686,
+                'longitude' => 31.18904272737579,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -381,13 +404,11 @@ class ScrapeMalekCarsBulkCommand extends Command
                     ''
                 ],
                 'amenities' => [
-                    'ABS Brakes',
-                    'Touchscreen Display',
                     'USB Charging Ports',
-                    'Leather Seats',
-                    'Cruise Control',
                     'Rear Camera',
-                    'Parking Sensors'
+                    'ABS Brakes',
+                    'Air Conditioning',
+                    'Bluetooth'
                 ]
             ],
             [
@@ -397,14 +418,14 @@ class ScrapeMalekCarsBulkCommand extends Command
                 'description_ar' => 'سيارة بورش كاريرا 2013 بحالة ممتازة، تقدم أداء رائع وراحة في القيادة داخل المدينة أو في الرحلات الطويلة. استمتع بتجربة قيادة متميزة.',
                 'type' => 'car',
                 'category' => 'sports',
-                'address' => 'Cairo, Egypt',
-                'address_ar' => 'القاهرة، مصر',
+                'address' => 'Maadi',
+                'address_ar' => 'المعادي',
                 'city' => 'Cairo',
                 'city_ar' => 'القاهرة',
                 'country' => 'Egypt',
                 'country_ar' => 'مصر',
-                'latitude' => 30.045524000855448,
-                'longitude' => 31.264414307500733,
+                'latitude' => 30.02481865434659,
+                'longitude' => 31.27049547468383,
                 'transmission' => 'automatic',
                 'fuel_type' => 'petrol',
                 'max_guests' => 5,
@@ -415,12 +436,10 @@ class ScrapeMalekCarsBulkCommand extends Command
                     ''
                 ],
                 'amenities' => [
-                    'ABS Brakes',
                     'Touchscreen Display',
                     'Bluetooth',
-                    'Rear Camera',
-                    'Parking Sensors',
-                    'USB Charging Ports'
+                    'Cruise Control',
+                    'Rear Camera'
                 ]
             ],
         ];

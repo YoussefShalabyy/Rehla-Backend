@@ -18,5 +18,5 @@ interface MediaStorageInterface
     /**
      * Delete a file from the provider using its public ID.
      */
-    public function delete(string $publicId): void;
+    public function delete(?string $publicId): void;
 }

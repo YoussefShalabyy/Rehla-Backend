@@ -147,4 +147,19 @@ class ReviewController extends Controller
             'data'    => new ReviewResource($review->load('reviewer')),
         ]);
     }
+
+    /**
+     * Delete a review completely.
+     */
+    public function destroy(string $uuid): JsonResponse
+    {
+        $review = Review::where('uuid', $uuid)->firstOrFail();
+        $this->reviewService->deleteAdminReview($review);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Review deleted successfully.',
+            'data'    => null,
+        ]);
+    }
 }

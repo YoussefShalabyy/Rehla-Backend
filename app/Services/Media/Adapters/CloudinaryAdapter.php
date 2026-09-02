@@ -66,8 +66,12 @@ class CloudinaryAdapter implements MediaStorageInterface
     /**
      * Delete a file from Cloudinary using its public ID.
      */
-    public function delete(string $publicId): void
+    public function delete(?string $publicId): void
     {
+        if (!$publicId) {
+            return;
+        }
+
         try {
             $this->cloudinary->uploadApi()->destroy($publicId);
         } catch (\Exception $e) {

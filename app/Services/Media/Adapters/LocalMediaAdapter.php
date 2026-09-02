@@ -27,8 +27,11 @@ final class LocalMediaAdapter implements MediaStorageInterface
         ];
     }
 
-    public function delete(string $publicId): void
+    public function delete(?string $publicId): void
     {
+        if (!$publicId) {
+            return;
+        }
         Storage::disk('public')->delete('media/' . $publicId);
     }
 }

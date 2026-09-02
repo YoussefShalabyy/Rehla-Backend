@@ -161,6 +161,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/{uuid}',         [\App\Http\Controllers\Api\Admin\ReviewController::class, 'update']);
             Route::put('/{uuid}/moderate',[\App\Http\Controllers\Api\Admin\ReviewController::class, 'moderate']);
             Route::post('/{uuid}/reply',  [\App\Http\Controllers\Api\Admin\ReviewController::class, 'reply']);
+            Route::delete('/{uuid}',      [\App\Http\Controllers\Api\Admin\ReviewController::class, 'destroy']);
         });
 
         // Admin Settings
